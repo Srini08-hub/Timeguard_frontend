@@ -28,8 +28,9 @@ export const TIMESHEET_ENDPOINTS = {
 } as const
 
 export const EMPLOYEE_ENDPOINTS = {
-  GET_EMPLOYEES: '/employees',
   GET_EMPLOYEE: (empId: string) => `/employees/${empId}`,
+  GET_ACTIVE_EMPLOYEES: '/employees/active',
+  GET_INACTIVE_EMPLOYEES: '/employees/inactive',
   CREATE_EMPLOYEE: '/employees',
   GET_UNASSIGNED_EMPLOYEES: '/employees/unassigned',
   UPDATE_EMPLOYEE: (empId: string) => `/employees/${empId}`,

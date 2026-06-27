@@ -1,59 +1,119 @@
 import { type FormEvent, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  AlertCircle,
+  ArrowUpRight,
+  Edit3,
+  Mail,
   Plus,
-  RefreshCw,
+  // RefreshCw,
   Search,
+  ShieldCheck,
+  Trash2,
+  UserRound,
   Users,
-  UserRoundPlus,
 } from 'lucide-react';
 
+import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { Modal } from '../../../components/ui/Modal';
-import { Spinner } from '../../../components/ui/Spinner';
+import { Select } from '../../../components/ui/Select';
+import { Table, type TableColumn } from '../../../components/ui/Table';
 import { useConfirm } from '../../../hooks/useConfirm';
 import { useToast } from '../../../hooks/useToast';
 import { CreateEmployee } from './CreateEmployee';
-import { GetEmployee } from './GetEmployee';
 import {
   useDeleteEmployee,
-  useEmployees,
+  useActiveEmployees,
+  useInactiveEmployees,
   useUpdateEmployee,
 } from '../hooks/useEmployees';
 import type { EmployeeResponse } from '../types';
 
-type EmployeeView = 'options' | 'list' | 'create';
+type EmployeeStatusFilter = 'active' | 'inactive';
+
+const EMPLOYEES_PER_PAGE = 10;
+
+const formatDate = (value: string) => {
+  return new Intl.DateTimeFormat('en', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(new Date(value));
+};
+
+const getInitials = (name: string) => {
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join('');
+};
 
 export const GetAllEmployee = () => {
-  const [view, setView] = useState<EmployeeView>('options');
+  const [statusFilter, setStatusFilter] = useState<EmployeeStatusFilter>('active');
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [employeeToUpdate, setEmployeeToUpdate] =
     useState<EmployeeResponse | null>(null);
   const [updatedName, setUpdatedName] = useState('');
   const [updatedEmail, setUpdatedEmail] = useState('');
   const [updateError, setUpdateError] = useState('');
 
+  const navigate = useNavigate();
   const toast = useToast();
   const confirm = useConfirm();
   const {
-    data: employees = [],
-    error,
-    isLoading,
-    isRefetching,
-    refetch,
-  } = useEmployees();
+    data: activeEmployeeRecords = [],
+    error: activeError,
+    isLoading: isActiveLoading,
+    // isRefetching: isActiveRefetching,
+    // refetch: refetchActiveEmployees,
+  } = useActiveEmployees();
+  const {
+    data: inactiveEmployeeRecords = [],
+    error: inactiveError,
+    isLoading: isInactiveLoading,
+    // isRefetching: isInactiveRefetching,
+    // refetch: refetchInactiveEmployees,
+  } = useInactiveEmployees();
   const { mutate: updateEmployee, isPending: isUpdating } = useUpdateEmployee();
   const { mutate: deleteEmployee, isPending: isDeleting } = useDeleteEmployee();
+
+  const employees =
+    statusFilter === 'active' ? activeEmployeeRecords : inactiveEmployeeRecords;
+  const error = statusFilter === 'active' ? activeError : inactiveError;
+  const isLoading =
+    statusFilter === 'active' ? isActiveLoading : isInactiveLoading;
+  // const isRefetching =
+  //   statusFilter === 'active' ? isActiveRefetching : isInactiveRefetching;
+  // const refetchEmployees =
+  //   statusFilter === 'active' ? refetchActiveEmployees : refetchInactiveEmployees;
 
   const filteredEmployees = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
     if (!normalizedSearch) return employees;
 
-    return employees.filter((employee) =>
-      employee.name.toLowerCase().includes(normalizedSearch),
-    );
+    return employees.filter((employee) => {
+      return [employee.name, employee.email, employee.empId]
+        .join(' ')
+        .toLowerCase()
+        .includes(normalizedSearch);
+    });
   }, [employees, searchTerm]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredEmployees.length / EMPLOYEES_PER_PAGE));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const paginatedEmployees = filteredEmployees.slice(
+    (safeCurrentPage - 1) * EMPLOYEES_PER_PAGE,
+    safeCurrentPage * EMPLOYEES_PER_PAGE,
+  );
+
+  const activeEmployees = activeEmployeeRecords.length;
+  const inactiveEmployees = inactiveEmployeeRecords.length;
+  const totalEmployees = activeEmployees + inactiveEmployees;
 
   const openUpdateModal = (employee: EmployeeResponse) => {
     setEmployeeToUpdate(employee);
@@ -84,7 +144,7 @@ export const GetAllEmployee = () => {
           setEmployeeToUpdate(null);
           setUpdatedName('');
           setUpdatedEmail('');
-          toast.success(`${employee.name} was updated.`, 'Employee updated');
+          toast.success(employee.name + ' was updated.', 'Employee updated');
         },
         onError: (requestError) => {
           toast.error(requestError.message, 'Update failed');
@@ -96,7 +156,7 @@ export const GetAllEmployee = () => {
   const handleDelete = async (employee: EmployeeResponse) => {
     const confirmed = await confirm({
       title: 'Delete employee?',
-      message: `${employee.name} will be removed from the active employee list.`,
+      message: employee.name + ' will be removed from the active employee list.',
       confirmText: 'Delete',
       cancelText: 'Keep employee',
       variant: 'danger',
@@ -106,7 +166,7 @@ export const GetAllEmployee = () => {
 
     deleteEmployee(employee.empId, {
       onSuccess: () => {
-        toast.success(`${employee.name} was deleted.`, 'Employee deleted');
+        toast.success(employee.name + ' was deleted.', 'Employee deleted');
       },
       onError: (requestError) => {
         toast.error(requestError.message, 'Delete failed');
@@ -114,160 +174,214 @@ export const GetAllEmployee = () => {
     });
   };
 
-  const showList = () => setView('list');
-  const showCreate = () => setView('create');
+  const columns: TableColumn<EmployeeResponse>[] = [
+    {
+      key: 'employee',
+      header: 'Employee',
+      accessor: (employee) => (
+        <div className="flex min-w-64 items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-sm font-semibold text-blue-700 ring-1 ring-blue-100 dark:bg-blue-950/35 dark:text-blue-300 dark:ring-blue-900/50">
+            {getInitials(employee.name) || <UserRound className="h-4 w-4" />}
+          </div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="truncate font-semibold text-gray-950 dark:text-white">
+                {employee.name}
+              </span>
+              <ArrowUpRight className="h-3.5 w-3.5 text-gray-400" />
+            </div>
+            <span className="mt-0.5 flex items-center gap-1.5 truncate text-xs text-gray-500 dark:text-gray-400">
+              <Mail className="h-3.5 w-3.5" />
+              {employee.email}
+            </span>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      accessor: (employee) => (
+        <Badge variant={employee.isActive ? 'success' : 'neutral'}>
+          {employee.isActive ? 'Active' : 'Inactive'}
+        </Badge>
+      ),
+    },
+    {
+      key: 'employee-id',
+      header: 'Employee ID',
+      accessor: (employee) => (
+        <span className="font-mono text-xs text-gray-600 dark:text-gray-300">
+          {employee.empId}
+        </span>
+      ),
+    },
+    {
+      key: 'created',
+      header: 'Created',
+      accessor: (employee) => formatDate(employee.createdAt),
+    },
+    {
+      key: 'actions',
+      header: <span className="sr-only">Actions</span>,
+      className: 'text-right',
+      accessor: (employee) => (
+        <div className="flex justify-end gap-2" onClick={(event) => event.stopPropagation()}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label={'Edit ' + employee.name}
+            className="h-9 w-9"
+            onClick={() => openUpdateModal(employee)}
+          >
+            <Edit3 className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label={'Delete ' + employee.name}
+            className="h-9 w-9 text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/25"
+            disabled={isDeleting}
+            onClick={() => handleDelete(employee)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      <div className="flex flex-col gap-4 border-b border-gray-100 pb-5 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-950 dark:text-white sm:text-3xl">
-            Employees
-          </h1>
-          <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
-            Manage employee records used across Timeguard assignments.
-          </p>
-        </div>
-
-        {view !== 'options' && (
-          <Button type="button" variant="outline" onClick={() => setView('options')}>
-            Employee Options
-          </Button>
-        )}
-      </div>
-
-      {view === 'options' && (
-        <section className="grid gap-4 md:grid-cols-2">
-          <button
-            type="button"
-            onClick={showList}
-            className="group rounded-2xl border border-gray-100 bg-white p-6 text-left shadow-sm transition-all hover:border-blue-200 hover:bg-blue-50/30 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-blue-900/60 dark:hover:bg-blue-950/10"
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-650 dark:bg-blue-950/35 dark:text-blue-300">
-                <Users className="h-6 w-6" />
+      <section className="rounded-lg border border-gray-200 bg-white shadow-sm shadow-gray-950/5 dark:border-gray-800 dark:bg-gray-950">
+        <div className="flex flex-col gap-5 border-b border-gray-200 px-5 py-5 dark:border-gray-800 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm shadow-blue-600/25">
+                <Users className="h-5 w-5" />
               </div>
-              <span className="rounded-full bg-gray-50 px-3 py-1 text-xs font-semibold text-gray-600 dark:bg-gray-800 dark:text-gray-300">
-                {employees.length} active
-              </span>
-            </div>
-            <h2 className="mt-5 text-lg font-bold text-gray-950 dark:text-white">
-              Get all users
-            </h2>
-            <p className="mt-2 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-              View employees, search the list, and update or delete records.
-            </p>
-          </button>
-
-          <button
-            type="button"
-            onClick={showCreate}
-            className="group rounded-2xl border border-gray-100 bg-white p-6 text-left shadow-sm transition-all hover:border-emerald-200 hover:bg-emerald-50/30 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-500/30 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-emerald-900/60 dark:hover:bg-emerald-950/10"
-          >
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-650 dark:bg-emerald-950/30 dark:text-emerald-300">
-              <UserRoundPlus className="h-6 w-6" />
-            </div>
-            <h2 className="mt-5 text-lg font-bold text-gray-950 dark:text-white">
-              Create user
-            </h2>
-            <p className="mt-2 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-              Add a new employee without leaving the operations dashboard.
-            </p>
-          </button>
-        </section>
-      )}
-
-      {view === 'create' && (
-        <CreateEmployee
-          onBack={() => setView('options')}
-          onCreated={() => setView('list')}
-        />
-      )}
-
-      {view === 'list' && (
-        <section className="space-y-4">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-                Available Employees ({filteredEmployees.length})
-              </h2>
-            </div>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <div className="w-full sm:w-72">
-                <Input
-                  value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
-                  placeholder="Search employees"
-                  icon={<Search className="h-4 w-4" />}
-                  fullWidth
-                />
+              <div>
+                <h1 className="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">
+                  Employees
+                </h1>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  Manage workforce records, operational status, and employee details.
+                </p>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                icon={
-                  <RefreshCw
-                    className={`h-4 w-4 ${isRefetching ? 'animate-spin' : ''}`}
-                  />
-                }
-                disabled={isLoading}
-                onClick={() => refetch()}
-              >
-                Refresh
-              </Button>
-              <Button
-                type="button"
-                variant="primary"
-                icon={<Plus className="h-4 w-4" />}
-                onClick={showCreate}
-              >
-                Create
-              </Button>
             </div>
           </div>
 
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-12 shadow-2xs dark:border-gray-800 dark:bg-gray-900">
-              <Spinner className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-              <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
-                Loading employees...
-              </p>
-            </div>
-          ) : error ? (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-red-100 bg-red-50/50 p-8 text-center dark:border-red-950/30 dark:bg-red-950/10">
-              <AlertCircle className="h-10 w-10 text-red-500" />
-              <h3 className="mt-3 text-sm font-semibold text-red-800 dark:text-red-400">
-                Failed to load employees
-              </h3>
-              <p className="mt-1 text-xs text-red-650 dark:text-red-500">
-                {error.message}
-              </p>
-            </div>
-          ) : filteredEmployees.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-gray-250 bg-gray-50/60 p-10 text-center dark:border-gray-800 dark:bg-gray-900/20">
-              <Users className="mx-auto h-9 w-9 text-gray-400 dark:text-gray-600" />
-              <h3 className="mt-4 text-sm font-semibold text-gray-900 dark:text-white">
-                No employees found
-              </h3>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Create an employee or adjust your search.
-              </p>
-            </div>
-          ) : (
-            <div className="grid gap-3">
-              {filteredEmployees.map((employee) => (
-                <GetEmployee
-                  key={employee.empId}
-                  employee={employee}
-                  onUpdate={openUpdateModal}
-                  onDelete={handleDelete}
-                  isDeleting={isDeleting}
-                />
-              ))}
-            </div>
-          )}
-        </section>
-      )}
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            {/* <Button
+              type="button"
+              variant="outline"
+              icon={<RefreshCw className={'h-4 w-4 ' + (isRefetching ? 'animate-spin' : '')} />}
+              disabled={isLoading}
+              onClick={() => refetchEmployees()}
+            >
+              Refresh
+            </Button> */}
+            <Button
+              type="button"
+              variant="primary"
+              icon={<Plus className="h-4 w-4" />}
+              onClick={() => setIsCreateOpen(true)}
+            >
+              New Employee
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid border-b border-gray-200 dark:border-gray-800 sm:grid-cols-3">
+          <div className="border-b border-gray-200 px-5 py-4 dark:border-gray-800 sm:border-b-0 sm:border-r">
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              Total employees
+            </p>
+            <p className="mt-2 text-2xl font-semibold text-gray-950 dark:text-white">
+              {totalEmployees}
+            </p>
+          </div>
+          <div className="border-b border-gray-200 px-5 py-4 dark:border-gray-800 sm:border-b-0 sm:border-r">
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              Active records
+            </p>
+            <p className="mt-2 text-2xl font-semibold text-gray-950 dark:text-white">
+              {activeEmployees}
+            </p>
+          </div>
+          <div className="px-5 py-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              Inactive records
+            </p>
+            <p className="mt-2 text-2xl font-semibold text-gray-950 dark:text-white">
+              {inactiveEmployees}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="grid w-full gap-3 sm:grid-cols-[12rem_minmax(0,1fr)] lg:max-w-2xl">
+            <Select
+              value={statusFilter}
+              onChange={(event) => {
+                setStatusFilter(event.target.value as EmployeeStatusFilter);
+                setSearchTerm('');
+                setCurrentPage(1);
+              }}
+              options={[
+                { value: 'active', label: 'Active employees' },
+                { value: 'inactive', label: 'Inactive employees' },
+              ]}
+              aria-label="Employee status"
+              fullWidth
+            />
+            <Input
+              value={searchTerm}
+              onChange={(event) => {
+                setSearchTerm(event.target.value);
+                setCurrentPage(1);
+              }}
+              placeholder="Search by name, email, or employee ID"
+              icon={<Search className="h-4 w-4" />}
+              fullWidth
+            />
+          </div>
+          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+            <ShieldCheck className="h-4 w-4 text-emerald-500" />
+            <span>{filteredEmployees.length} {statusFilter} records visible</span>
+          </div>
+        </div>
+      </section>
+
+      <Table
+        data={paginatedEmployees}
+        columns={columns}
+        isLoading={isLoading}
+        error={error?.message}
+        emptyMessage={
+          statusFilter === 'active'
+            ? 'No active employees match the current search.'
+            : 'No inactive employees match the current search.'
+        }
+        rowKey="empId"
+        onRowClick={(employee) => navigate(employee.empId)}
+        pagination={{
+          currentPage: safeCurrentPage,
+          totalPages,
+          onPageChange: setCurrentPage,
+        }}
+      />
+
+      <Modal
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        title="Create Employee"
+        size="lg"
+      >
+        <CreateEmployee onCreated={() => setIsCreateOpen(false)} />
+      </Modal>
 
       <Modal
         isOpen={Boolean(employeeToUpdate)}
@@ -276,48 +390,34 @@ export const GetAllEmployee = () => {
         size="md"
       >
         <form onSubmit={handleUpdate} className="space-y-5">
-          <div className="space-y-2">
-            <label
-              htmlFor="update-employee-name"
-              className="text-sm font-semibold text-gray-750 dark:text-gray-200"
-            >
-              Employee name
-            </label>
-            <Input
-              id="update-employee-name"
-              value={updatedName}
-              onChange={(event) => {
-                setUpdatedName(event.target.value);
-                if (updateError) setUpdateError('');
-              }}
-              error={updateError}
-              placeholder="Employee name"
-              disabled={isUpdating}
-              fullWidth
-            />
-          </div>
+          <Input
+            id="update-employee-name"
+            label="Employee name"
+            value={updatedName}
+            onChange={(event) => {
+              setUpdatedName(event.target.value);
+              if (updateError) setUpdateError('');
+            }}
+            error={updateError}
+            placeholder="Employee name"
+            disabled={isUpdating}
+            fullWidth
+          />
 
-          <div className="space-y-2">
-            <label
-              htmlFor="update-employee-email"
-              className="text-sm font-semibold text-gray-750 dark:text-gray-200"
-            >
-              Email
-            </label>
-            <Input
-              id="update-employee-email"
-              type="email"
-              value={updatedEmail}
-              onChange={(event) => {
-                setUpdatedEmail(event.target.value);
-                if (updateError) setUpdateError('');
-              }}
-              error={updateError}
-              placeholder="Employee email"
-              disabled={isUpdating}
-              fullWidth
-            />
-          </div>
+          <Input
+            id="update-employee-email"
+            label="Email"
+            type="email"
+            value={updatedEmail}
+            onChange={(event) => {
+              setUpdatedEmail(event.target.value);
+              if (updateError) setUpdateError('');
+            }}
+            error={updateError}
+            placeholder="Employee email"
+            disabled={isUpdating}
+            fullWidth
+          />
 
           <div className="flex justify-end gap-3 border-t border-gray-100 pt-5 dark:border-gray-800">
             <Button
@@ -328,11 +428,7 @@ export const GetAllEmployee = () => {
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              isLoading={isUpdating}
-            >
+            <Button type="submit" variant="primary" isLoading={isUpdating}>
               Save Changes
             </Button>
           </div>

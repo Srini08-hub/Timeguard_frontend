@@ -22,7 +22,7 @@ export const useClients = () => {
 export const useClient = (clientId?: string) => {
   return useQuery<ClientResponse, Error>({
     queryKey: clientId ? clientQueryKeys.detail(clientId) : ['clients', 'detail'],
-    queryFn: () => clientService.getClients().then(clients => clients.find(c => c.client_id === clientId)!),
+    queryFn: () => clientService.getClients().then((clients) => clients.find((client) => client.client_id === clientId)!),
     enabled: Boolean(clientId),
   });
 };
@@ -32,8 +32,9 @@ export const useCreateClient = () => {
 
   return useMutation<ClientResponse, Error, ClientCreate>({
     mutationFn: clientService.createClient,
-    onSuccess: () => {
+    onSuccess: (client) => {
       queryClient.invalidateQueries({ queryKey: clientQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: clientQueryKeys.detail(client.client_id) });
     },
   });
 };
@@ -48,8 +49,9 @@ export const useUpdateClient = () => {
   >({
     mutationFn: ({ clientId, clientData }) =>
       clientService.updateClient(clientId, clientData),
-    onSuccess: () => {
+    onSuccess: (client) => {
       queryClient.invalidateQueries({ queryKey: clientQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: clientQueryKeys.detail(client.client_id) });
     },
   });
 };
@@ -59,8 +61,9 @@ export const useDeleteClient = () => {
 
   return useMutation<void, Error, string>({
     mutationFn: clientService.deleteClient,
-    onSuccess: () => {
+    onSuccess: (_, clientId) => {
       queryClient.invalidateQueries({ queryKey: clientQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: clientQueryKeys.detail(clientId) });
       queryClient.invalidateQueries({ queryKey: ['employees', 'unassigned'] });
     },
   });

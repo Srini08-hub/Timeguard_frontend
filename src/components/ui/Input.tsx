@@ -38,7 +38,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             className={`text-sm font-medium leading-none ${
               disabled
                 ? 'text-gray-400 dark:text-gray-600'
-                : 'text-white dark:text-gray-250'
+                : 'text-gray-700 dark:text-gray-200'
             }`}
           >
             {label}

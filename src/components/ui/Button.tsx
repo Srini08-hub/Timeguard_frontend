@@ -3,7 +3,7 @@ import { Spinner } from './Spinner';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'danger' | 'outline' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'icon';
   isLoading?: boolean;
   icon?: React.ReactNode;
   iconPosition?: 'left' | 'right';
@@ -21,7 +21,7 @@ export const Button: React.FC<ButtonProps> = ({
   type = 'button',
   ...props
 }) => {
-  const baseClasses = 'inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer';
+  const baseClasses = 'inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-950 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer';
 
   const variantClasses = {
     primary: 'bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500 border border-transparent shadow-sm',
@@ -35,11 +35,10 @@ export const Button: React.FC<ButtonProps> = ({
     sm: 'px-3 py-1.5 text-sm gap-1.5',
     md: 'px-4 py-2 text-sm gap-2',
     lg: 'px-5 py-2.5 text-base gap-2.5',
+    icon: 'h-10 w-10 p-0 text-sm',
   };
 
-  // Determine spinner color variant
   const spinnerVariant = variant === 'primary' || variant === 'danger' ? 'white' : 'secondary';
-
   const isBtnDisabled = disabled || isLoading;
 
   return (
@@ -58,7 +57,7 @@ export const Button: React.FC<ButtonProps> = ({
         <span className="flex shrink-0">{icon}</span>
       )}
 
-      <span>{children}</span>
+      {children && <span>{children}</span>}
 
       {!isLoading && icon && iconPosition === 'right' && (
         <span className="flex shrink-0">{icon}</span>
