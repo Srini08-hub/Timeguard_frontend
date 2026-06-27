@@ -18,6 +18,7 @@ export const USER_ENDPOINTS = {
 } as const
 
 export const EMAIL_ENDPOINTS = {
+  GET_EMAILS_BY_STATUS: (status: string) => `/emails?status=${status}`,
   GET_TIMESHEET_EMAILS: '/emails/timesheet-emails',
   GET_NON_TIMESHEET_EMAILS: '/emails/non-timesheet-emails',
   GET_ATTACHMENT_INFO: (emailId: string) => `/emails/${emailId}/attachments`,

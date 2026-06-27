@@ -10,6 +10,8 @@ export type EmailStatus =
   | "not_received"
   | "received"
   | "classified"
+  | "extracted"
+  | "merged"
   | "processed"
   | "not_processed"
   | "failed";
@@ -32,5 +34,8 @@ export interface TimesheetEmailResponse {
   subject: string | null;
   body: string | null;
   status: EmailStatus;
+  failure_stage?: string | null;
+  failure_reason?: string | null;
 //   classification_status: EmailClassificationStatus;
 }
+

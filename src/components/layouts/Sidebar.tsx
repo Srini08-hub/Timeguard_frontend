@@ -94,7 +94,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </Button>
         </div>
 
-        <div className={`px-4 pt-5 ${isExpanded ? 'block' : 'hidden lg:hidden'}`}>
+        {/* <div className={`px-4 pt-5 ${isExpanded ? 'block' : 'hidden lg:hidden'}`}>
           <div className="rounded-lg border border-blue-100 bg-blue-50 p-3 dark:border-blue-900/50 dark:bg-blue-950/25">
             <div className="flex items-center justify-between gap-2">
               <span className="text-xs font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">
@@ -106,7 +106,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               Admin Console
             </p>
           </div>
-        </div>
+        </div> */}
 
         <nav className={`flex-1 space-y-1 overflow-y-auto overflow-x-hidden py-5 ${isExpanded ? 'px-4' : 'px-3'}`} aria-label="Primary navigation">
           {navItems.map((item) => {
