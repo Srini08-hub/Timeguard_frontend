@@ -17,11 +17,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) 
   if (allowedRoles && role && !allowedRoles.includes(role)) {
     // Redirect authorized users trying to access pages from other roles back to their dashboard
     if (role === 'admin') {
-      return <Navigate to="/dashboard/admin" replace />;
-    } else if (role === 'operation_manager') {
-      return <Navigate to="/dashboard/operation-manager" replace />;
+      return <Navigate to="/admin" replace />;
+    } else if (role === 'OpsAdmin') {
+      return <Navigate to="/ops-admin" replace />;
     } else if (role === 'reviewer') {
-      return <Navigate to="/dashboard/reviewer" replace />;
+      return <Navigate to="/reviewer" replace />;
     }
     return <Navigate to="/login" replace />;
   }

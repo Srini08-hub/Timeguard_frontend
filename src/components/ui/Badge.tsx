@@ -1,7 +1,7 @@
 import React from 'react';
 
 export interface BadgeProps {
-  variant?: 'success' | 'warning' | 'danger' | 'info' | 'neutral';
+  variant?: 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'neutral';
   children: React.ReactNode;
   className?: string;
 }

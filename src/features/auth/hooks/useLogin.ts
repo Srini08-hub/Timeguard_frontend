@@ -20,8 +20,8 @@ export const useLogin = () => {
         setAuth(user_id,name,email,role);
         if (role === 'admin') {
           navigate('/admin', { replace: true });
-        } else if (role === 'operation_manager') {
-          navigate('/operation-manager', { replace: true });
+        } else if (role === 'OpsAdmin') {
+          navigate('/ops-admin', { replace: true });
         } else if (role === 'reviewer') {
           navigate('/reviewer', { replace: true });
         } else {

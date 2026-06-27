@@ -4,15 +4,20 @@ import { useAuth } from '../features/auth/hooks/useAuth';
 import { ProtectedRoute } from './ProtectedRoutes';
 import { LoginPage } from '../features/auth/pages/LoginPage';
 import Admin from '../features/Dashboard/pages/Admin';
-import OperationManger from '../features/Dashboard/pages/OperationManger';
+import OpsAdmin from '../features/Dashboard/pages/OpsAdmin';
 import Reviewer from '../features/Dashboard/pages/Reviewer';
-import { CreateUserForm } from '../features/User/components/CreateUserForm';
+import { User } from '../features/User/components/Users';
+import { TimeSheet } from '../features/Emails/components/TimeSheet';
+import  {NonTimeSheet}  from '../features/Emails/components/NonTimesheet';
+import {TimesheetPending} from '../features/Timesheet/components/TimesheetPending';
+import { GetAllEmployee } from '../features/Employee/components/GetAllEmployee';
+import { Clients } from '../features/Client/components/Clients';
 const AppRoutes: React.FC = () => {
-   const { userId, role } = useAuth();
-   const getDefaultRoute = () => {
+  const { userId, role } = useAuth();
+  const getDefaultRoute = () => {
     if (!userId) return '/login'
     if (role === 'admin') return '/admin/user'
-    if (role === 'operation_manager') return '/operation-manager'
+    if (role === 'OpsAdmin') return '/ops-admin'
     if (role === 'reviewer') return '/reviewer'
     return '/login'
   }
@@ -23,22 +28,31 @@ const AppRoutes: React.FC = () => {
 
       {/* Protected Routes */}
       <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
-          <Route path="/admin" element={<Admin />}>
-             <Route index path="create-user" element={<CreateUserForm />} />
-          </Route>
+        <Route path="/admin" element={<Admin />}>
+          <Route index element={<Navigate to="users" replace />} />
+          <Route path="users" element={<User />} />
+        </Route>
 
       </Route>
 
-      <Route element={<ProtectedRoute allowedRoles={['operation_manager']} />}>
-        <Route path="/operation-manager" element={<OperationManger />} />
+      <Route element={<ProtectedRoute allowedRoles={['OpsAdmin']} />}>
+        <Route path="/ops-admin" element={<OpsAdmin />} >
+          <Route index element={<Navigate to="employees" replace />} />
+          <Route path="employees" element={<GetAllEmployee />} />
+          <Route path="clients" element={<Clients />} />
+          <Route path="timesheet-emails" element={<TimeSheet />} />
+          <Route path="non-timesheet-emails" element={<NonTimeSheet />} />
+        </Route>
       </Route>
 
       <Route element={<ProtectedRoute allowedRoles={['reviewer']} />}>
-        <Route path="/reviewer" element={<Reviewer />} />
+        <Route path="/reviewer" element={<Reviewer />} >
+          <Route index path="timesheets-pending" element={<TimesheetPending />} />
+        </Route>
       </Route>
 
       {/* Root Path Conditional Redirect */}
-     
+
 
       {/* Catch-all route */}
       <Route path="*" element={<Navigate to={getDefaultRoute()} replace />} />

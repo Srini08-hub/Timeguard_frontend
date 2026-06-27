@@ -2,17 +2,18 @@ import React from 'react';
 import { useNavigate,useLocation,Outlet } from 'react-router-dom';
 import { AppLayout } from '../../../components/layouts';
 import { useAuth, useLogout } from '../../auth/hooks';
-import { Database } from 'lucide-react';
+import { Shield, Users, Database } from 'lucide-react';
 
-const reviewerItems = [
-  // { label: 'Create Client', href: 'create-client', icon: Users },
-  { label: 'Timesheets', href: 'timesheets-pending', icon: Database },
-  // { label: 'Non-Timesheet Emails', href: 'non-timesheet-emails', icon: Database },
-  // { label: 'Profile', href: 'profile', icon: Shield },
+const OpsAdminNavItems = [
+  { label: 'Employees', href: 'employees', icon: Users },
+  { label: 'Clients', href: 'clients', icon: Users },
+  { label: 'Timesheet Emails', href: 'timesheet-emails', icon: Database },
+  { label: 'Non-Timesheet Emails', href: 'non-timesheet-emails', icon: Database },
+  { label: 'Profile', href: 'profile', icon: Shield },
 
 ];
 
-const Reviewer: React.FC = () => {
+const OpsAdmin: React.FC = () => {
   const {name, email } = useAuth();
   const { logout } = useLogout();
   const navigate = useNavigate();
@@ -23,19 +24,19 @@ const Reviewer: React.FC = () => {
      const currentPath =location.pathname.split('/').pop() ?? ''
   // console.log('Current Path:', currentPath); // Debugging line
   const activePageTitle =
-    reviewerItems.find(
+    OpsAdminNavItems.find(
       item => item.href === currentPath
-    )?.label ?? 'Reviewer';
+    )?.label ?? 'Operations Manager';
 
   return (
     <AppLayout
       onLogout={logout}
        user={{
-        name: name || 'Reviewer',
-        email: email || 'rev@timeguard.com',
+        name: name || 'OpsAdmin',
+        email: email || 'ops@timeguard.com',
       }}
       activePageTitle={activePageTitle}
-      navitems={reviewerItems}
+      navitems={OpsAdminNavItems}
       onNavigate={handleNavigate}
     >
       <main className="">
@@ -45,4 +46,4 @@ const Reviewer: React.FC = () => {
   );
 };
 
-export default Reviewer;
+export default OpsAdmin;
