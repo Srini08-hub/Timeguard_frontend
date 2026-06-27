@@ -12,14 +12,21 @@ const toEmployeeResponse = (employee: EmployeeApiResponse): EmployeeResponse => 
   email: employee.email,
   name: employee.name,
   isActive: employee.is_active,
+  isAssigned: employee.is_assigned,
   createdAt: employee.created_at,
 //   createdBy: employee.created_by,
 });
 
 export const employeeService = {
-    getEmployees: async (): Promise<EmployeeResponse[]> => {
+    getActiveEmployees: async (): Promise<EmployeeResponse[]> => {
         const response = await axiosInstance.get<EmployeeApiResponse[]>(
-            EMPLOYEE_ENDPOINTS.GET_EMPLOYEES,
+            EMPLOYEE_ENDPOINTS.GET_ACTIVE_EMPLOYEES,
+        );
+        return response.data.map(toEmployeeResponse);
+    },
+    getInactiveEmployees: async (): Promise<EmployeeResponse[]> => {
+        const response = await axiosInstance.get<EmployeeApiResponse[]>(
+            EMPLOYEE_ENDPOINTS.GET_INACTIVE_EMPLOYEES,
         );
         return response.data.map(toEmployeeResponse);
     },

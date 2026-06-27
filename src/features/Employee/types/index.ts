@@ -16,6 +16,7 @@ export interface EmployeeResponse {
   name: string;
   email: string;
   isActive: boolean;
+  isAssigned: boolean;
   createdAt: string;
   // createdBy?: string | null;
 }
@@ -25,6 +26,7 @@ export interface EmployeeApiResponse {
   name: string;
   email: string;
   is_active: boolean;
+  is_assigned: boolean;
   created_at: string;
   // created_by?: string | null;
 }

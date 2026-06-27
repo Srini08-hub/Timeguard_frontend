@@ -11,7 +11,10 @@ import { TimeSheet } from '../features/Emails/components/TimeSheet';
 import  {NonTimeSheet}  from '../features/Emails/components/NonTimesheet';
 import {TimesheetPending} from '../features/Timesheet/components/TimesheetPending';
 import { GetAllEmployee } from '../features/Employee/components/GetAllEmployee';
+import { GetEmployee } from '../features/Employee/components/GetEmployee';
 import { Clients } from '../features/Client/components/Clients';
+import { ClientDetails } from '../features/Client/components/ClientDetails';
+import { DepartmentDetails } from '../features/Department/components/DepartmentDetails';
 const AppRoutes: React.FC = () => {
   const { userId, role } = useAuth();
   const getDefaultRoute = () => {
@@ -39,7 +42,10 @@ const AppRoutes: React.FC = () => {
         <Route path="/ops-admin" element={<OpsAdmin />} >
           <Route index element={<Navigate to="employees" replace />} />
           <Route path="employees" element={<GetAllEmployee />} />
+          <Route path="employees/:empId" element={<GetEmployee />} />
           <Route path="clients" element={<Clients />} />
+          <Route path="clients/:clientId" element={<ClientDetails />} />
+          <Route path="clients/:clientId/departments/:departmentId" element={<DepartmentDetails />} />
           <Route path="timesheet-emails" element={<TimeSheet />} />
           <Route path="non-timesheet-emails" element={<NonTimeSheet />} />
         </Route>
@@ -61,3 +67,5 @@ const AppRoutes: React.FC = () => {
 };
 
 export default AppRoutes;
+
+

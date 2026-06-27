@@ -21,9 +21,13 @@ export const useCreateDepartment = () => {
 
   return useMutation<DepartmentResponse, Error, DepartmentCreate>({
     mutationFn: departmentService.createDepartment,
-    onSuccess: (_, variables) => {
+    onSuccess: (department, variables) => {
+      queryClient.invalidateQueries({ queryKey: departmentQueryKeys.all });
       queryClient.invalidateQueries({
         queryKey: departmentQueryKeys.byClient(variables.client_id),
+      });
+      queryClient.invalidateQueries({
+        queryKey: departmentQueryKeys.detail(department.department_id),
       });
     },
   });
@@ -39,8 +43,14 @@ export const useUpdateDepartment = () => {
   >({
     mutationFn: ({ departmentId, departmentData }) =>
       departmentService.updateDepartment(departmentId, departmentData),
-    onSuccess: () => {
+    onSuccess: (department) => {
       queryClient.invalidateQueries({ queryKey: departmentQueryKeys.all });
+      queryClient.invalidateQueries({
+        queryKey: departmentQueryKeys.byClient(department.client_id),
+      });
+      queryClient.invalidateQueries({
+        queryKey: departmentQueryKeys.detail(department.department_id),
+      });
     },
   });
 };
@@ -52,11 +62,12 @@ export const useDeleteDepartment = () => {
     mutationFn: ({ departmentId }) =>
       departmentService.deleteDepartment(departmentId),
     onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: departmentQueryKeys.all });
       queryClient.invalidateQueries({
         queryKey: departmentQueryKeys.byClient(variables.clientId),
       });
-      queryClient.refetchQueries({
-        queryKey: departmentQueryKeys.byClient(variables.clientId),
+      queryClient.invalidateQueries({
+        queryKey: departmentQueryKeys.detail(variables.departmentId),
       });
       queryClient.invalidateQueries({ queryKey: ['employees', 'unassigned'] });
     },
