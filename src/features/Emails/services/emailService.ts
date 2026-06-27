@@ -4,6 +4,10 @@ import { EMAIL_ENDPOINTS } from '../../../config/constant'
 
 
 const emailService = {
+    getEmailsByStatus: async (status: string): Promise<TimesheetEmailResponse[]> => {
+        const response = await axiosInstance.get(EMAIL_ENDPOINTS.GET_EMAILS_BY_STATUS(status))
+        return response.data
+    },
     getTimesheetEmails: async (): Promise<TimesheetEmailResponse[]> => {
         const response = await axiosInstance.get(EMAIL_ENDPOINTS.GET_TIMESHEET_EMAILS)
         return response.data

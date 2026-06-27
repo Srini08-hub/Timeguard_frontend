@@ -1,36 +1,32 @@
 import React from 'react';
-import { useNavigate,useLocation,Outlet } from 'react-router-dom';
+import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { AppLayout } from '../../../components/layouts';
 import { useAuth, useLogout } from '../../auth/hooks';
-import { Database } from 'lucide-react';
+import { Database, Mail } from 'lucide-react';
 
 const reviewerItems = [
-  // { label: 'Create Client', href: 'create-client', icon: Users },
   { label: 'Timesheets', href: 'timesheets-pending', icon: Database },
-  // { label: 'Non-Timesheet Emails', href: 'non-timesheet-emails', icon: Database },
-  // { label: 'Profile', href: 'profile', icon: Shield },
-
+  { label: 'Mail', href: 'emails', icon: Mail },
 ];
 
 const Reviewer: React.FC = () => {
-  const {name, email } = useAuth();
+  const { name, email } = useAuth();
   const { logout } = useLogout();
   const navigate = useNavigate();
-    const location = useLocation();
-    const handleNavigate = (href: string) => {
-      navigate(href);
-    };
-     const currentPath =location.pathname.split('/').pop() ?? ''
-  // console.log('Current Path:', currentPath); // Debugging line
-  const activePageTitle =
-    reviewerItems.find(
-      item => item.href === currentPath
-    )?.label ?? 'Reviewer';
+  const location = useLocation();
+
+  const handleNavigate = (href: string) => {
+    navigate(href);
+  };
+
+  const activePageTitle = location.pathname.includes('/emails')
+    ? 'Mail'
+    : reviewerItems.find((item) => item.href === (location.pathname.split('/').pop() ?? ''))?.label ?? 'Reviewer';
 
   return (
     <AppLayout
       onLogout={logout}
-       user={{
+      user={{
         name: name || 'Reviewer',
         email: email || 'rev@timeguard.com',
       }}

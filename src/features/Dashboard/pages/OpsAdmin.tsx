@@ -2,13 +2,12 @@ import React from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { AppLayout } from '../../../components/layouts';
 import { useAuth, useLogout } from '../../auth/hooks';
-import { Shield, Users, Database } from 'lucide-react';
+import { Shield, Users } from 'lucide-react';
 
 const OpsAdminNavItems = [
   { label: 'Employees', href: 'employees', icon: Users },
   { label: 'Clients', href: 'clients', icon: Users },
-  { label: 'Timesheet Emails', href: 'timesheet-emails', icon: Database },
-  { label: 'Non-Timesheet Emails', href: 'non-timesheet-emails', icon: Database },
+
   { label: 'Profile', href: 'profile', icon: Shield },
 ];
 
