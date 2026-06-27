@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
+import { ArrowLeft, Sparkles, UserPlus } from 'lucide-react';
+
+import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { Select } from '../../../components/ui/Select';
-import { Button } from '../../../components/ui/Button';
+import { useToast } from '../../../hooks/useToast';
 import { useCreateUser } from '../hooks/useCreateUser';
 import type { UserRole } from '../types';
-import { UserPlus } from 'lucide-react';
 
-export const CreateUserForm = () => {
+interface CreateUserFormProps {
+  onBack?: () => void;
+  onCreated?: () => void;
+}
+
+export const CreateUserForm = ({ onBack, onCreated }: CreateUserFormProps) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -14,8 +21,9 @@ export const CreateUserForm = () => {
     role: 'reviewer' as UserRole,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const toast = useToast();
 
-  const { mutate: createUser, isPending, isError, error, isSuccess, reset } = useCreateUser();
+  const { mutate: createUser, isPending, isError, isSuccess, reset } = useCreateUser();
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -63,102 +71,155 @@ export const CreateUserForm = () => {
         password: '',
         role: 'reviewer',
       });
+      setErrors({});
+      toast.success(`${formData.name} was added successfully.`, 'User created');
+      onCreated?.();
     },
     onError: (error) => {
-      console.error('Failed to create user:', error.message);
-      alert(error.message);
+      toast.error(error.message, 'Create failed');
     },
   });
 };
 
   return (
-    <div className="w-full max-w-md mx-auto p-8 bg-white dark:bg-gray-900 rounded-2xl shadow-xs border border-gray-150 dark:border-gray-800 animate-in fade-in zoom-in-95 duration-200">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-blue-50 dark:bg-blue-950/40 rounded-lg text-blue-600 dark:text-blue-400">
-          <UserPlus className="h-6 w-6" />
-        </div>
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Create User</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Add a new user to the system.</p>
+    <section className="mx-auto w-full max-w-3xl animate-in fade-in duration-300">
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          icon={<ArrowLeft className="h-4 w-4" />}
+          onClick={onBack}
+          className={onBack ? '' : 'invisible'}
+        >
+          Back
+        </Button>
+        <div className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:text-emerald-300">
+          <Sparkles className="h-3.5 w-3.5" />
+          User setup
         </div>
       </div>
 
-      {isSuccess && (
-        <div className="mb-6 p-3 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg text-sm border border-green-200 dark:border-green-800 transition-all">
-          User created successfully!
+      <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <div className="border-b border-gray-100 bg-gray-50/70 px-6 py-5 dark:border-gray-800 dark:bg-gray-900/40">
+          <div className="flex items-center gap-4">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-650 dark:bg-blue-950/35 dark:text-blue-300">
+              <UserPlus className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold tracking-tight text-gray-950 dark:text-white">
+                Create User
+              </h2>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Add a new user to the system with appropriate access roles.
+              </p>
+            </div>
+          </div>
         </div>
-      )}
 
-      {isError && (
-        <div className="mb-6 p-3 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg text-sm border border-red-200 dark:border-red-800 transition-all">
-          {error instanceof Error ? error.message : 'Failed to create user. Please try again.'}
-        </div>
-      )}
+        <form onSubmit={handleSubmit} className="space-y-5 p-6">
+          <div className="space-y-2">
+            <label
+              htmlFor="user-name"
+              className="text-sm font-semibold text-gray-750 dark:text-gray-200"
+            >
+              Full name
+            </label>
+            <Input
+              id="user-name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              error={errors.name}
+              placeholder="e.g. John Doe"
+              disabled={isPending}
+              fullWidth
+            />
+          </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <Input
-          label="Full Name"
-          id="name"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          error={errors.name}
-          placeholder="John Doe"
-          disabled={isPending}
-          fullWidth
-        />
+          <div className="space-y-2">
+            <label
+              htmlFor="user-email"
+              className="text-sm font-semibold text-gray-750 dark:text-gray-200"
+            >
+              Email address
+            </label>
+            <Input
+              id="user-email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              error={errors.email}
+              placeholder="e.g. john@example.com"
+              disabled={isPending}
+              fullWidth
+            />
+          </div>
 
-        <Input
-          label="Email Address"
-          id="email"
-          name="email"
-          type="email"
-          value={formData.email}
-          onChange={handleChange}
-          error={errors.email}
-          placeholder="john@example.com"
-          disabled={isPending}
-          fullWidth
-        />
+          <div className="space-y-2">
+            <label
+              htmlFor="user-password"
+              className="text-sm font-semibold text-gray-750 dark:text-gray-200"
+            >
+              Password
+            </label>
+            <Input
+              id="user-password"
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              error={errors.password}
+              placeholder="••••••••"
+              disabled={isPending}
+              fullWidth
+            />
+          </div>
 
-        <Input
-          label="Password"
-          id="password"
-          name="password"
-          type="password"
-          value={formData.password}
-          onChange={handleChange}
-          error={errors.password}
-          placeholder="••••••••"
-          disabled={isPending}
-          fullWidth
-        />
+          <div className="space-y-2">
+            <label
+              htmlFor="user-role"
+              className="text-sm font-semibold text-gray-750 dark:text-gray-200"
+            >
+              Role
+            </label>
+            <Select
+              id="user-role"
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              options={[
+                { value: 'OpsAdmin', label: 'OpsAdmin' },
+                { value: 'reviewer', label: 'Reviewer' }
+              ]}
+              disabled={isPending}
+              fullWidth
+            />
+          </div>
 
-        <Select
-          label="Role"
-          id="role"
-          name="role"
-          value={formData.role}
-          onChange={handleChange}
-          options={[
-            { value: 'OpsAdmin', label: 'OpsAdmin' },
-            { value: 'reviewer', label: 'Reviewer' }
-          ]}
-          disabled={isPending}
-          fullWidth
-        />
-
-        <div className="pt-4">
-          <Button
-            type="submit"
-            variant="primary"
-            className="w-full"
-            isLoading={isPending}
-          >
-            Create User
-          </Button>
-        </div>
-      </form>
-    </div>
+          <div className="flex flex-col-reverse gap-3 border-t border-gray-100 pt-5 dark:border-gray-800 sm:flex-row sm:justify-end">
+            {onBack && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onBack}
+                disabled={isPending}
+              >
+                Cancel
+              </Button>
+            )}
+            <Button
+              type="submit"
+              variant="primary"
+              isLoading={isPending}
+              icon={<UserPlus className="h-4 w-4" />}
+            >
+              Create User
+            </Button>
+          </div>
+        </form>
+      </div>
+    </section>
   );
 };
