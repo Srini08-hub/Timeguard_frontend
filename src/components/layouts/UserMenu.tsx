@@ -104,14 +104,14 @@ export const UserMenu: React.FC<UserMenuProps> = ({
             <span>My Profile</span>
           </a>
 
-          <a
+          {/* <a
             href="#settings"
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-950 dark:text-gray-300 dark:hover:bg-gray-900 dark:hover:text-white"
           >
             <Settings className="h-4 w-4 text-gray-400" />
             <span>Settings</span>
-          </a>
+          </a> */}
 
           <div className="my-1 border-t border-gray-100 dark:border-gray-800" />
 

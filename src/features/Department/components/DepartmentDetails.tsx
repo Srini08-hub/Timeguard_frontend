@@ -14,6 +14,7 @@ import { Button } from '../../../components/ui/Button';
 import { Spinner } from '../../../components/ui/Spinner';
 import { useClient } from '../../Client/hooks/useClients';
 import { AssignedEmployees } from '../../Assignments/components/AssignedEmployees';
+import { DepartmentClientRulePanel } from '../../ClientRules/components/DepartmentClientRulePanel';
 import { AssignEmployeeModal } from '../../Assignments/components/AssignEmployeeModal';
 import { useAssignmentsByDepartment } from '../../Assignments/hooks/useAssignments';
 import { useDepartmentsByClient } from '../hooks/useDepartments';
@@ -215,6 +216,12 @@ export const DepartmentDetails = ({ department, clientId, onBack }: DepartmentDe
         </div>
       </section>
 
+      <DepartmentClientRulePanel
+        clientId={resolvedClientId}
+        departmentId={selectedDepartment.department_id}
+        departmentName={selectedDepartment.department_name}
+      />
+
       <AssignedEmployees departmentId={selectedDepartment.department_id} clientId={resolvedClientId} />
 
       <AssignEmployeeModal
@@ -226,3 +233,4 @@ export const DepartmentDetails = ({ department, clientId, onBack }: DepartmentDe
     </div>
   );
 };
+

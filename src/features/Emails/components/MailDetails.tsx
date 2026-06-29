@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   AlertCircle,
   ArrowLeft,
+  Check,
   ExternalLink,
   FileText,
   Inbox,
@@ -18,7 +19,8 @@ import { Table, type TableColumn } from '../../../components/ui/Table';
 import { useAttachmentInfo } from '../hooks/useAttachmentInfo';
 import {
   type MailCategory,
-  useEmailsByStatus,
+  type MailFilter,
+  useAllMails,
   useNonTimesheetMails,
   useTimesheetMails,
 } from '../hooks/useEmails';
@@ -28,7 +30,10 @@ interface MailLocationState {
   email?: TimesheetEmailResponse;
   status?: EmailStatus;
   category?: MailCategory;
+  filter?: MailFilter;
 }
+
+const STATUS_REFETCH_INTERVAL = 3000;
 
 const statusLabels: Record<EmailStatus, string> = {
   not_received: 'Not Received',
@@ -40,6 +45,14 @@ const statusLabels: Record<EmailStatus, string> = {
   not_processed: 'Not Processed',
   failed: 'Failed',
 };
+
+const statusSteps: EmailStatus[] = [
+  'received',
+  'classified',
+  'extracted',
+  'merged',
+  'processed',
+];
 
 const attachmentStatusLabels: Record<AttachmentStatus, string> = {
   pending: 'Pending',
@@ -77,6 +90,26 @@ const getFailureReason = (email: TimesheetEmailResponse) => {
   return email.failure_reason?.trim() || 'No failure reason recorded';
 };
 
+const getStatusStepState = (currentStatus: EmailStatus, step: EmailStatus) => {
+  if (currentStatus === 'failed' || currentStatus === 'not_processed') {
+    return step === 'received' || step === 'classified' ? 'complete' : 'pending';
+  }
+
+  const currentIndex = statusSteps.indexOf(currentStatus);
+  const stepIndex = statusSteps.indexOf(step);
+
+  if (currentIndex === -1) return 'pending';
+  if (stepIndex < currentIndex) return 'complete';
+  if (stepIndex === currentIndex) return 'active';
+  return 'pending';
+};
+
+const dedupeEmails = (emails: TimesheetEmailResponse[]) => {
+  const byId = new Map<string, TimesheetEmailResponse>();
+  emails.forEach((email) => byId.set(email.email_id, email));
+  return Array.from(byId.values());
+};
+
 export const MailDetails = () => {
   const { emailId } = useParams<{ emailId: string }>();
   const navigate = useNavigate();
@@ -84,57 +117,23 @@ export const MailDetails = () => {
   const routeState = location.state as MailLocationState | null;
   const routeStateEmail = routeState?.email;
   const stateEmail = routeStateEmail?.email_id === emailId ? routeStateEmail : undefined;
-  const shouldLookupMail = !stateEmail;
 
-  const { data: timesheetEmails = [], isLoading: isTimesheetLoading } = useTimesheetMails(shouldLookupMail);
-  const { data: nonTimesheetEmails = [], isLoading: isNonTimesheetLoading } = useNonTimesheetMails(shouldLookupMail);
-  const receivedQuery = useEmailsByStatus('received', shouldLookupMail);
-  const classifiedQuery = useEmailsByStatus('classified', shouldLookupMail);
-  const extractedQuery = useEmailsByStatus('extracted', shouldLookupMail);
-  const mergedQuery = useEmailsByStatus('merged', shouldLookupMail);
-  const processedQuery = useEmailsByStatus('processed', shouldLookupMail);
-  const failedQuery = useEmailsByStatus('failed', shouldLookupMail);
+  const allMailsQuery = useAllMails(true, STATUS_REFETCH_INTERVAL);
+  const { data: timesheetEmails = [], isLoading: isTimesheetLoading } = useTimesheetMails(true, STATUS_REFETCH_INTERVAL);
+  const { data: nonTimesheetEmails = [], isLoading: isNonTimesheetLoading } = useNonTimesheetMails(true, STATUS_REFETCH_INTERVAL);
 
   const lookupEmails = useMemo(() => {
-    return [
+    return dedupeEmails([
+      ...(allMailsQuery.data ?? []),
       ...timesheetEmails,
       ...nonTimesheetEmails,
-      ...(receivedQuery.data ?? []),
-      ...(classifiedQuery.data ?? []),
-      ...(extractedQuery.data ?? []),
-      ...(mergedQuery.data ?? []),
-      ...(processedQuery.data ?? []),
-      ...(failedQuery.data ?? []),
-    ];
-  }, [
-    classifiedQuery.data,
-    extractedQuery.data,
-    failedQuery.data,
-    mergedQuery.data,
-    nonTimesheetEmails,
-    processedQuery.data,
-    receivedQuery.data,
-    timesheetEmails,
-  ]);
+    ]);
+  }, [allMailsQuery.data, nonTimesheetEmails, timesheetEmails]);
 
-  const selectedEmail = stateEmail || lookupEmails.find((email) => email.email_id === emailId);
-  const isLookupLoading = shouldLookupMail && (
-    isTimesheetLoading ||
-    isNonTimesheetLoading ||
-    receivedQuery.isLoading ||
-    classifiedQuery.isLoading ||
-    extractedQuery.isLoading ||
-    mergedQuery.isLoading ||
-    processedQuery.isLoading ||
-    failedQuery.isLoading
-  );
-  const lookupError =
-    receivedQuery.error ||
-    classifiedQuery.error ||
-    extractedQuery.error ||
-    mergedQuery.error ||
-    processedQuery.error ||
-    failedQuery.error;
+  const liveEmail = lookupEmails.find((email) => email.email_id === emailId);
+  const selectedEmail = liveEmail || stateEmail;
+  const isLookupLoading = !selectedEmail && (allMailsQuery.isLoading || isTimesheetLoading || isNonTimesheetLoading);
+  const lookupError = allMailsQuery.error;
 
   const {
     data: attachments = [],
@@ -142,15 +141,15 @@ export const MailDetails = () => {
     isLoading: isAttachmentsLoading,
     isRefetching: isAttachmentsRefetching,
     refetch: refetchAttachments,
-  } = useAttachmentInfo(emailId);
+  } = useAttachmentInfo(emailId, STATUS_REFETCH_INTERVAL);
 
   const mailType = useMemo(() => {
-    if (routeState?.category === 'timesheet') return 'Timesheet';
-    if (routeState?.category === 'non-timesheet') return 'Non-Timesheet';
+    if (routeState?.category === 'timesheet' || routeState?.filter === 'timesheet') return 'Timesheet';
+    if (routeState?.category === 'non-timesheet' || routeState?.filter === 'non-timesheet') return 'Non-Timesheet';
     if (timesheetEmails.some((email) => email.email_id === emailId)) return 'Timesheet';
     if (nonTimesheetEmails.some((email) => email.email_id === emailId)) return 'Non-Timesheet';
-    return 'Status Queue';
-  }, [emailId, nonTimesheetEmails, routeState?.category, timesheetEmails]);
+    return 'All Mails';
+  }, [emailId, nonTimesheetEmails, routeState?.category, routeState?.filter, timesheetEmails]);
 
   const attachmentColumns: TableColumn<AttachmentInfo>[] = [
     {
@@ -262,11 +261,14 @@ export const MailDetails = () => {
         <Button
           type="button"
           variant="outline"
-          icon={<RefreshCw className={'h-4 w-4 ' + (isAttachmentsRefetching ? 'animate-spin' : '')} />}
+          icon={<RefreshCw className={'h-4 w-4 ' + (isAttachmentsRefetching || allMailsQuery.isRefetching ? 'animate-spin' : '')} />}
           disabled={isAttachmentsLoading}
-          onClick={() => refetchAttachments()}
+          onClick={() => {
+            allMailsQuery.refetch();
+            refetchAttachments();
+          }}
         >
-          Refresh Attachments
+          Refresh
         </Button>
       </div>
 
@@ -294,15 +296,76 @@ export const MailDetails = () => {
 
             <div className="rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-950">
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                Mail ID
+                Live refresh
               </p>
-              <p className="mt-1 font-mono text-sm text-gray-950 dark:text-white">
-                {selectedEmail.email_id}
+              <p className="mt-1 text-sm font-semibold text-gray-950 dark:text-white">
+                Every 3 seconds
               </p>
             </div>
           </div>
         </div>
 
+        <div className="px-6 py-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+            {statusSteps.map((step, index) => {
+              const state = getStatusStepState(selectedEmail.status, step);
+              const isComplete = state === 'complete';
+              const isActive = state === 'active';
+              return (
+                <div key={step} className="flex flex-1 items-center gap-3">
+                  <div
+                    className={
+                      'flex h-10 w-10 shrink-0 items-center justify-center rounded-full border text-sm font-semibold transition-colors ' +
+                      (isComplete
+                        ? 'border-emerald-600 bg-emerald-600 text-white'
+                        : isActive
+                          ? 'border-blue-600 bg-blue-600 text-white shadow-sm shadow-blue-600/25'
+                          : 'border-gray-200 bg-white text-gray-400 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-500')
+                    }
+                  >
+                    {isComplete ? <Check className="h-4 w-4" /> : index + 1}
+                  </div>
+                  <div className="min-w-0">
+                    <p
+                      className={
+                        'text-sm font-semibold ' +
+                        (isComplete || isActive ? 'text-gray-950 dark:text-white' : 'text-gray-500 dark:text-gray-400')
+                      }
+                    >
+                      {statusLabels[step]}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {isComplete ? 'Completed' : isActive ? 'Current step' : 'Waiting'}
+                    </p>
+                  </div>
+                  {index < statusSteps.length - 1 && (
+                    <div
+                      className={
+                        'hidden h-px flex-1 lg:block ' +
+                        (isComplete ? 'bg-emerald-500' : 'bg-gray-200 dark:bg-gray-800')
+                      }
+                    />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {(selectedEmail.status === 'failed' || selectedEmail.status === 'not_processed') && (
+            <div className="mt-5 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-950/40 dark:bg-red-950/15 dark:text-red-300">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+              <div>
+                <p className="font-semibold">Processing stopped</p>
+                <p className="mt-1">
+                  {getFailureStage(selectedEmail)}: {getFailureReason(selectedEmail)}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm shadow-gray-950/5 dark:border-gray-800 dark:bg-gray-950">
         <div className="grid md:grid-cols-3">
           <div className="border-b border-gray-200 p-6 dark:border-gray-800 md:border-b-0 md:border-r">
             <div className="flex items-center gap-3">
@@ -343,55 +406,16 @@ export const MailDetails = () => {
               </div>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                  Processing status
+                  Mail ID
                 </p>
-                <p className="mt-1 text-sm font-semibold text-gray-950 dark:text-white">
-                  {statusLabels[selectedEmail.status] || selectedEmail.status}
+                <p className="mt-1 max-w-56 truncate font-mono text-sm font-semibold text-gray-950 dark:text-white">
+                  {selectedEmail.email_id}
                 </p>
               </div>
             </div>
           </div>
         </div>
       </section>
-
-      {selectedEmail.status === 'failed' && (
-        <section className="rounded-lg border border-red-200 bg-red-50/70 p-5 shadow-sm shadow-red-950/5 dark:border-red-950/40 dark:bg-red-950/15">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div className="flex min-w-0 gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300">
-                <AlertCircle className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <h2 className="text-lg font-semibold text-red-900 dark:text-red-200">
-                  Failure Details
-                </h2>
-                <p className="mt-1 text-sm text-red-700 dark:text-red-300">
-                  This mail failed during processing. Review the stage and reason before retrying or investigating upstream data.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-5 grid gap-4 md:grid-cols-2">
-            <div className="rounded-lg border border-red-200 bg-white p-4 dark:border-red-950/50 dark:bg-gray-950">
-              <p className="text-xs font-semibold uppercase tracking-wide text-red-500 dark:text-red-300">
-                Failure stage
-              </p>
-              <p className="mt-2 text-sm font-semibold text-gray-950 dark:text-white">
-                {getFailureStage(selectedEmail)}
-              </p>
-            </div>
-            <div className="rounded-lg border border-red-200 bg-white p-4 dark:border-red-950/50 dark:bg-gray-950">
-              <p className="text-xs font-semibold uppercase tracking-wide text-red-500 dark:text-red-300">
-                Failure reason
-              </p>
-              <p className="mt-2 text-sm leading-6 text-gray-700 dark:text-gray-300">
-                {getFailureReason(selectedEmail)}
-              </p>
-            </div>
-          </div>
-        </section>
-      )}
 
       <section className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm shadow-gray-950/5 dark:border-gray-800 dark:bg-gray-950">
         <h2 className="text-lg font-semibold text-gray-950 dark:text-white">Mail Content</h2>
@@ -432,7 +456,3 @@ export const MailDetails = () => {
     </div>
   );
 };
-
-
-
-

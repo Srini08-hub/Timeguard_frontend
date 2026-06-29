@@ -1,8 +1,8 @@
 export const AUTH_KEYS = {
-    TOKEN: 'access_token',
-    REFRESH_TOKEN: 'refresh_token',
-  }
-  
+  TOKEN: 'access_token',
+  REFRESH_TOKEN: 'refresh_token',
+} as const
+
 export const AUTH_ENDPOINTS = {
   LOGIN: '/auth/login',
   LOGOUT: '/auth/logout',
@@ -24,8 +24,13 @@ export const EMAIL_ENDPOINTS = {
   GET_ATTACHMENT_INFO: (emailId: string) => `/emails/${emailId}/attachments`,
 } as const
 
+export const CONTENT_EXTRACT_ENDPOINTS = {
+  GET_CONTENT_EXTRACTS_BY_EMAIL_ID: (emailId: string) => `/content-extracts/email/${emailId}`,
+} as const
+
 export const TIMESHEET_ENDPOINTS = {
-  GET_PENDING_TIMESHEETS: '/timesheet/pending',
+  GET_UNDER_REVIEW_TIMESHEETS: '/timesheet/under_review',
+  GET_PROCESSED_TIMESHEETS: '/timesheet/processed',
 } as const
 
 export const EMPLOYEE_ENDPOINTS = {
@@ -37,6 +42,7 @@ export const EMPLOYEE_ENDPOINTS = {
   UPDATE_EMPLOYEE: (empId: string) => `/employees/${empId}`,
   DELETE_EMPLOYEE: (empId: string) => `/employees/${empId}`,
 } as const
+
 export const CLIENT_ENDPOINTS = {
   GET_CLIENTS: '/clients',
   CREATE_CLIENT: '/clients',
@@ -50,10 +56,29 @@ export const DEPARTMENT_ENDPOINTS = {
   UPDATE_DEPARTMENT: (departmentId: string) => `/departments/${departmentId}`,
   DELETE_DEPARTMENT: (departmentId: string) => `/departments/${departmentId}`,
 } as const
+
 export const ASSIGNMENT_ENDPOINTS = {
   GET_ASSIGNMENTS: '/assignments',
   CREATE_ASSIGNMENT: '/assignments',
   GET_ASSIGNMENTS_BY_DEPARTMENT: (departmentId: string) => `/assignments/department/${departmentId}`,
   UPDATE_ASSIGNMENT: (assignmentId: string) => `/assignments/${assignmentId}`,
   DELETE_ASSIGNMENT: (assignmentId: string) => `/assignments/${assignmentId}`,
+} as const
+
+export const CLIENT_RULE_ENDPOINTS = {
+  GET_CLIENT_RULES: '/client-rules',
+  GET_CLIENT_RULE: (ruleId: string) => `/client-rules/${ruleId}`,
+  GET_CLIENT_RULES_BY_DEPARTMENT: (departmentId: string) => `/client-rules/department/${departmentId}`,
+  CREATE_CLIENT_RULE: '/client-rules',
+  UPDATE_CLIENT_RULE: (ruleId: string) => `/client-rules/${ruleId}`,
+  DELETE_CLIENT_RULE: (ruleId: string) => `/client-rules/${ruleId}`,
+} as const
+
+export const TIMECARD_ENDPOINTS = {
+  GET_BY_TIMESHEET: (timesheetId: string) => `/timecards/timesheet/${timesheetId}`,
+  GET_DETAIL: (timecardId: string) => `/timecards/${timecardId}`,
+  RESOLVE: (timecardId: string) => `/timecards/${timecardId}/resolve`,
+  APPROVE: (timecardId: string) => `/timecards/${timecardId}/approve`,
+  BULK_APPROVE: '/timecards/bulk/approve',
+  REJECT: (timecardId: string) => `/timecards/${timecardId}/reject`,
 } as const

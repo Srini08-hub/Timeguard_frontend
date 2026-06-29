@@ -1,11 +1,122 @@
-export interface Timesheet {  
- timesheet_id: string;
+﻿export interface TimesheetPayloadBlock {
+  error?: string | null;
+  success?: boolean;
+  extraction?: {
+    rows?: TimesheetPayloadRow[];
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+export type TimesheetPayloadRow = Record<string, unknown>;
+
+export interface TimesheetSheetPayload {
+  blocks?: TimesheetPayloadBlock[];
+  rows?: TimesheetPayloadRow[];
+  global_fields?: Record<string, unknown>;
+  employees_meta?: TimesheetPayloadRow[];
+  sheet_name?: string;
+  [key: string]: unknown;
+}
+
+export interface TimesheetRecord {
+  date?: string | null;
+  check_in?: string | null;
+  check_out?: string | null;
+  break_hour?: string | null;
+  hours?: string | null;
+  total_hours?: string | null;
+  overtime_hours?: string | null;
+  confidence?: number | string | null;
+  [key: string]: unknown;
+}
+
+export interface SourceInfo {
+  file_name: string;
+  content_type: string;
+  [key: string]: unknown;
+}
+
+export interface EmployeeRecord {
+  employee_name: string;
+  department?: string | null;
+  source?: SourceInfo[];
+  timesheet_records?: TimesheetRecord[];
+  [key: string]: unknown;
+}
+
+export interface GlobalData {
+  client_name?: string | null;
+  week_ending?: string | null;
+  [key: string]: unknown;
+}
+
+export interface MergeResponse {
+  global_data?: GlobalData | null;
+  employee_records?: EmployeeRecord[];
+  [key: string]: unknown;
+}
+
+export type TimesheetExtractedPayload = TimesheetSheetPayload | TimesheetSheetPayload[] | MergeResponse;
+
+export type TimesheetStatus = 'under_review' | 'processed' | 'pending';
+
+export interface Timesheet {
+  timesheet_id: string;
   email_id: string;
-  attachment_id: string | null;
-  source_type: string;
   client_name: string | null;
-  week_ending: string | null; // ISO date (YYYY-MM-DD)
-  extracted_payload: Record<string, unknown> | null;
-  status: string;
-  created_at: string; // ISO datetime
+  week_ending: string | null;
+  merged_payload: TimesheetExtractedPayload | null;
+  enriched_payload?: TimesheetExtractedPayload | null;
+  status?: TimesheetStatus | string | null;
+  created_at?: string | null;
+}
+
+export interface ContentExtract {
+  extracted_payload: TimesheetExtractedPayload | null;
+  source_type: string;
+  attachment_name: string;
+}
+
+export type TimecardStatus = 'pending' | 'clean' | 'exception' | 'approved' | 'rejected';
+export type ExceptionSeverity = 'none' | 'low' | 'medium' | 'high';
+
+export interface TimecardException {
+  exception_id: string;
+  timecard_id: string;
+  severity: ExceptionSeverity | string;
+  exception_type: string;
+  reason: string;
+  resolved: boolean;
+  resolved_at?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TimecardEntry {
+  timecard_id: string;
+  timesheet_id: string;
+  emp_id?: string | null;
+  assignment_id?: string | null;
+  rule_id?: string | null;
+  reviewed_by?: string | null;
+  week_ending: string;
+  employee_name?: string | null;
+  reg_hours?: number | string | null;
+  ot_hours?: number | string | null;
+  dt_hours?: number | string | null;
+  status: TimecardStatus | string;
+  severity: ExceptionSeverity | string;
+  review_comment?: string | null;
+  created_at: string;
+  updated_at: string;
+  exceptions: TimecardException[];
+}
+
+export interface TimecardUpdatePayload {
+  employee_name?: string | null;
+  reg_hours?: number | null;
+  ot_hours?: number | null;
+  dt_hours?: number | null;
+  review_comment?: string | null;
 }

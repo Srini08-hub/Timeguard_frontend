@@ -41,7 +41,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             <h1 className="truncate text-lg font-semibold text-gray-950 dark:text-white">
               {title}
             </h1>
-            <Badge variant="primary" className="hidden sm:inline-flex">Production</Badge>
+            {/* <Badge variant="primary" className="hidden sm:inline-flex">Production</Badge> */}
           </div>
           <p className="hidden truncate text-xs text-gray-500 dark:text-gray-400 sm:block">
             TimeGuard operations workspace
@@ -50,17 +50,17 @@ export const TopBar: React.FC<TopBarProps> = ({
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3">
-        <div className="hidden w-64 items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 xl:flex">
+        {/* <div className="hidden w-64 items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 xl:flex">
           <Search className="h-4 w-4 shrink-0" />
           <span className="truncate">Search workspace</span>
-        </div>
+        </div> */}
 
         <div className="hidden items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-300 lg:flex">
           <CalendarDays className="h-4 w-4 text-gray-400" />
           <span>{formattedDate}</span>
         </div>
 
-        <Button
+        {/* <Button
           variant="ghost"
           size="icon"
           aria-label="View notifications"
@@ -68,7 +68,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         >
           <Bell className="h-5 w-5" />
           <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-blue-600 ring-2 ring-white dark:ring-gray-950" />
-        </Button>
+        </Button> */}
 
         <div className="h-8 w-px bg-gray-200 dark:bg-gray-800" />
 
