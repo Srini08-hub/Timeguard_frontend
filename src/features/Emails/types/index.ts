@@ -36,6 +36,7 @@ export interface TimesheetEmailResponse {
   status: EmailStatus;
   failure_stage?: string | null;
   failure_reason?: string | null;
+  received_at: string;
 //   classification_status: EmailClassificationStatus;
 }
 

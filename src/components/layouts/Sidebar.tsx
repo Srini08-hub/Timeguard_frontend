@@ -157,7 +157,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
               <div className="min-w-0">
                 <p className="truncate text-xs font-semibold text-gray-900 dark:text-white">
-                  Enterprise Edition
+                  Timeguard
                 </p>
                 <p className="truncate text-xs text-gray-500 dark:text-gray-400">
                   v1.0.0

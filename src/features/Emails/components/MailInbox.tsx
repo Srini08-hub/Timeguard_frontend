@@ -13,10 +13,8 @@ import { Button } from '../../../components/ui/Button';
 import { Select } from '../../../components/ui/Select';
 import { Table, type TableColumn } from '../../../components/ui/Table';
 import {
-  canFilterByMailCategory,
-  mailStatuses,
-  type MailCategory,
-  useEmailsByStatus,
+  type MailFilter,
+  useAllMails,
   useNonTimesheetMails,
   useTimesheetMails,
 } from '../hooks/useEmails';
@@ -24,10 +22,17 @@ import type { EmailStatus, TimesheetEmailResponse } from '../types';
 
 const MAILS_PER_PAGE = 10;
 
-const statusOptions = mailStatuses.map((status) => ({
-  value: status,
-  label: status.charAt(0).toUpperCase() + status.slice(1),
-}));
+const mailFilterOptions = [
+  { value: 'all', label: 'All Mails' },
+  { value: 'timesheet', label: 'Timesheet' },
+  { value: 'non-timesheet', label: 'Non-Timesheet' },
+];
+
+const filterLabels: Record<MailFilter, string> = {
+  all: 'All Mails',
+  timesheet: 'Timesheet',
+  'non-timesheet': 'Non-Timesheet',
+};
 
 const statusLabels: Record<EmailStatus, string> = {
   not_received: 'Not Received',
@@ -50,83 +55,59 @@ const getStatusVariant = (status: EmailStatus) => {
 
 const getPreview = (value: string | null) => {
   if (!value) return 'No body content available';
-  return value.length > 45 ? value.slice(0, 45) + '...' : value;
+  return value.length > 40 ? value.slice(0, 40) + '...' : value;
 };
 
 const getSubject = (email: TimesheetEmailResponse) => {
   return email.subject?.trim() || 'No subject';
 };
 
-const getFailureStage = (email: TimesheetEmailResponse) => {
-  return email.failure_stage?.trim() || 'Not recorded';
+const getReceivedTime = (email: TimesheetEmailResponse) => {
+  const receivedTime = Date.parse(email.received_at);
+  return Number.isNaN(receivedTime) ? 0 : receivedTime;
 };
 
-const getFailureReason = (email: TimesheetEmailResponse) => {
-  return email.failure_reason?.trim() || 'No failure reason recorded';
+const sortByNewestReceived = (emails: TimesheetEmailResponse[]) => {
+  return [...emails].sort((firstEmail, secondEmail) => (
+    getReceivedTime(secondEmail) - getReceivedTime(firstEmail)
+  ));
 };
 
 export const MailInbox = () => {
-  const [selectedStatus, setSelectedStatus] = useState<EmailStatus>('received');
-  const [selectedCategory, setSelectedCategory] = useState<MailCategory>('timesheet');
+  const [selectedFilter, setSelectedFilter] = useState<MailFilter>('all');
   const [currentPage, setCurrentPage] = useState(1);
 
   const navigate = useNavigate();
-  const showCategoryTabs = canFilterByMailCategory(selectedStatus);
 
-  const {
-    data: statusEmails = [],
-    error: statusError,
-    isLoading: isStatusLoading,
-    isRefetching: isStatusRefetching,
-    refetch: refetchStatusEmails,
-  } = useEmailsByStatus(selectedStatus, !showCategoryTabs);
-  const {
-    data: timesheetEmails = [],
-    error: timesheetError,
-    isLoading: isTimesheetLoading,
-    isRefetching: isTimesheetRefetching,
-    refetch: refetchTimesheetEmails,
-  } = useTimesheetMails(showCategoryTabs && selectedCategory === 'timesheet');
-  const {
-    data: nonTimesheetEmails = [],
-    error: nonTimesheetError,
-    isLoading: isNonTimesheetLoading,
-    isRefetching: isNonTimesheetRefetching,
-    refetch: refetchNonTimesheetEmails,
-  } = useNonTimesheetMails(showCategoryTabs && selectedCategory === 'non-timesheet');
+  const allMailsQuery = useAllMails(selectedFilter === 'all');
+  const timesheetQuery = useTimesheetMails(selectedFilter === 'timesheet');
+  const nonTimesheetQuery = useNonTimesheetMails(selectedFilter === 'non-timesheet');
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategory, selectedStatus]);
-
-  useEffect(() => {
-    if (!showCategoryTabs) {
-      setSelectedCategory('timesheet');
-    }
-  }, [showCategoryTabs]);
+  }, [selectedFilter]);
 
   const visibleEmails = useMemo(() => {
-    if (!showCategoryTabs) return statusEmails;
+    if (selectedFilter === 'timesheet') return sortByNewestReceived(timesheetQuery.data ?? []);
+    if (selectedFilter === 'non-timesheet') return sortByNewestReceived(nonTimesheetQuery.data ?? []);
+    return sortByNewestReceived(allMailsQuery.data ?? []);
+  }, [allMailsQuery.data, nonTimesheetQuery.data, selectedFilter, timesheetQuery.data]);
 
-    const source = selectedCategory === 'timesheet' ? timesheetEmails : nonTimesheetEmails;
-    return source.filter((email) => email.status === selectedStatus);
-  }, [nonTimesheetEmails, selectedCategory, selectedStatus, showCategoryTabs, statusEmails, timesheetEmails]);
-
-  const activeError = showCategoryTabs
-    ? selectedCategory === 'timesheet'
-      ? timesheetError
-      : nonTimesheetError
-    : statusError;
-  const isLoading = showCategoryTabs
-    ? selectedCategory === 'timesheet'
-      ? isTimesheetLoading
-      : isNonTimesheetLoading
-    : isStatusLoading;
-  const isRefetching = showCategoryTabs
-    ? selectedCategory === 'timesheet'
-      ? isTimesheetRefetching
-      : isNonTimesheetRefetching
-    : isStatusRefetching;
+  const activeError = selectedFilter === 'timesheet'
+    ? timesheetQuery.error
+    : selectedFilter === 'non-timesheet'
+      ? nonTimesheetQuery.error
+      : allMailsQuery.error;
+  const isLoading = selectedFilter === 'timesheet'
+    ? timesheetQuery.isLoading
+    : selectedFilter === 'non-timesheet'
+      ? nonTimesheetQuery.isLoading
+      : allMailsQuery.isLoading;
+  const isRefetching = selectedFilter === 'timesheet'
+    ? timesheetQuery.isRefetching
+    : selectedFilter === 'non-timesheet'
+      ? nonTimesheetQuery.isRefetching
+      : allMailsQuery.isRefetching;
 
   const totalPages = Math.max(1, Math.ceil(visibleEmails.length / MAILS_PER_PAGE));
   const safeCurrentPage = Math.min(currentPage, totalPages);
@@ -136,30 +117,29 @@ export const MailInbox = () => {
   );
 
   const refetchVisibleEmails = () => {
-    if (!showCategoryTabs) {
-      refetchStatusEmails();
+    if (selectedFilter === 'timesheet') {
+      timesheetQuery.refetch();
       return;
     }
 
-    if (selectedCategory === 'timesheet') {
-      refetchTimesheetEmails();
+    if (selectedFilter === 'non-timesheet') {
+      nonTimesheetQuery.refetch();
       return;
     }
 
-    refetchNonTimesheetEmails();
+    allMailsQuery.refetch();
   };
 
   const openMail = (email: TimesheetEmailResponse) => {
     navigate(email.email_id, {
       state: {
         email,
-        status: selectedStatus,
-        category: showCategoryTabs ? selectedCategory : undefined,
+        filter: selectedFilter,
       },
     });
   };
 
-  const baseColumns: TableColumn<TimesheetEmailResponse>[] = [
+  const columns: TableColumn<TimesheetEmailResponse>[] = [
     {
       key: 'mail',
       header: 'Mail',
@@ -192,15 +172,11 @@ export const MailInbox = () => {
       ),
     },
     {
-      key: 'category',
-      header: 'Type',
+      key: 'type',
+      header: 'Mailbox',
       accessor: () => (
-        <Badge variant={showCategoryTabs ? 'primary' : 'neutral'}>
-          {showCategoryTabs
-            ? selectedCategory === 'timesheet'
-              ? 'Timesheet'
-              : 'Non-Timesheet'
-            : 'Status Queue'}
+        <Badge variant={selectedFilter === 'all' ? 'neutral' : 'primary'}>
+          {filterLabels[selectedFilter]}
         </Badge>
       ),
     },
@@ -224,31 +200,6 @@ export const MailInbox = () => {
     },
   ];
 
-  const failedColumns: TableColumn<TimesheetEmailResponse>[] = selectedStatus === 'failed'
-    ? [
-        {
-          key: 'failureStage',
-          header: 'Failure Stage',
-          accessor: (email) => (
-            <span className="inline-flex rounded-md bg-red-50 px-2 py-1 text-xs font-semibold text-red-700 ring-1 ring-red-600/20 dark:bg-red-950/30 dark:text-red-300 dark:ring-red-500/25">
-              {getFailureStage(email)}
-            </span>
-          ),
-        },
-        {
-          key: 'failureReason',
-          header: 'Failure Reason',
-          accessor: (email) => (
-            <span className="block max-w-lg truncate text-sm text-gray-600 dark:text-gray-300">
-              {getFailureReason(email)}
-            </span>
-          ),
-        },
-      ]
-    : [];
-
-  const columns = [...baseColumns.slice(0, 3), ...failedColumns, ...baseColumns.slice(3)];
-
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       <section className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm shadow-gray-950/5 dark:border-gray-800 dark:bg-gray-950">
@@ -262,7 +213,7 @@ export const MailInbox = () => {
                 Mail
               </h1>
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Review inbound mail by processing status and inspect attachments from one workspace.
+                Review inbound mail in one workspace and open each record for live processing status.
               </p>
             </div>
           </div>
@@ -278,45 +229,43 @@ export const MailInbox = () => {
           </Button>
         </div>
 
+        <div className="grid border-b border-gray-200 dark:border-gray-800 md:grid-cols-3">
+          <div className="border-b border-gray-200 px-5 py-4 dark:border-gray-800 md:border-b-0 md:border-r">
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              Visible mails
+            </p>
+            <p className="mt-2 text-2xl font-semibold text-gray-950 dark:text-white">
+              {visibleEmails.length}
+            </p>
+          </div>
+          <div className="border-b border-gray-200 px-5 py-4 dark:border-gray-800 md:border-b-0 md:border-r">
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              Mailbox
+            </p>
+            <p className="mt-2 text-2xl font-semibold text-gray-950 dark:text-white">
+              {filterLabels[selectedFilter]}
+            </p>
+          </div>
+          <div className="px-5 py-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              Current page
+            </p>
+            <p className="mt-2 text-2xl font-semibold text-gray-950 dark:text-white">
+              {safeCurrentPage} / {totalPages}
+            </p>
+          </div>
+        </div>
+
         <div className="flex flex-col gap-4 px-5 py-4 xl:flex-row xl:items-end xl:justify-between">
           <div className="w-full xl:max-w-xs">
             <Select
-              label="Status"
-              value={selectedStatus}
-              options={statusOptions}
+              label="Mailbox"
+              value={selectedFilter}
+              options={mailFilterOptions}
               fullWidth
-              onChange={(event) => setSelectedStatus(event.target.value as EmailStatus)}
+              onChange={(event) => setSelectedFilter(event.target.value as MailFilter)}
             />
           </div>
-
-          {showCategoryTabs && (
-            <div className="inline-flex w-full rounded-lg border border-gray-200 bg-gray-50 p-1 dark:border-gray-800 dark:bg-gray-900 xl:w-auto">
-              <button
-                type="button"
-                onClick={() => setSelectedCategory('timesheet')}
-                className={
-                  'flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors xl:flex-none ' +
-                  (selectedCategory === 'timesheet'
-                    ? 'bg-white text-blue-700 shadow-sm ring-1 ring-gray-200 dark:bg-gray-950 dark:text-blue-300 dark:ring-gray-800'
-                    : 'text-gray-600 hover:text-gray-950 dark:text-gray-400 dark:hover:text-white')
-                }
-              >
-                Timesheet
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedCategory('non-timesheet')}
-                className={
-                  'flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors xl:flex-none ' +
-                  (selectedCategory === 'non-timesheet'
-                    ? 'bg-white text-blue-700 shadow-sm ring-1 ring-gray-200 dark:bg-gray-950 dark:text-blue-300 dark:ring-gray-800'
-                    : 'text-gray-600 hover:text-gray-950 dark:text-gray-400 dark:hover:text-white')
-                }
-              >
-                Non-Timesheet
-              </button>
-            </div>
-          )}
         </div>
       </section>
 
@@ -325,7 +274,7 @@ export const MailInbox = () => {
         columns={columns}
         isLoading={isLoading}
         error={activeError?.message}
-        emptyMessage="No mails match the selected filters."
+        emptyMessage="No mails match the selected mailbox."
         rowKey="email_id"
         onRowClick={openMail}
         pagination={{
@@ -338,9 +287,10 @@ export const MailInbox = () => {
       <div className="flex items-start gap-3 rounded-lg border border-blue-100 bg-blue-50 p-4 text-sm text-blue-800 dark:border-blue-900/50 dark:bg-blue-950/20 dark:text-blue-300">
         <FileText className="mt-0.5 h-4 w-4 shrink-0" />
         <p>
-          Open a mail row to inspect the full message and attachment processing status.
+          Open a mail row to inspect live status, message details, and attachment processing records.
         </p>
       </div>
     </div>
   );
 };
+

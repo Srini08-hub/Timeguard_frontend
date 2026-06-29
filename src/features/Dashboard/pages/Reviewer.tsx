@@ -5,7 +5,7 @@ import { useAuth, useLogout } from '../../auth/hooks';
 import { Database, Mail } from 'lucide-react';
 
 const reviewerItems = [
-  { label: 'Timesheets', href: 'timesheets-pending', icon: Database },
+  { label: 'Timesheets', href: 'timesheets', icon: Database },
   { label: 'Mail', href: 'emails', icon: Mail },
 ];
 
@@ -21,7 +21,9 @@ const Reviewer: React.FC = () => {
 
   const activePageTitle = location.pathname.includes('/emails')
     ? 'Mail'
-    : reviewerItems.find((item) => item.href === (location.pathname.split('/').pop() ?? ''))?.label ?? 'Reviewer';
+    : location.pathname.includes('/timesheets')
+      ? 'Timesheets'
+      : reviewerItems.find((item) => item.href === (location.pathname.split('/').pop() ?? ''))?.label ?? 'Reviewer';
 
   return (
     <AppLayout
