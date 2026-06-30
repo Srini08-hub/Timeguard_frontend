@@ -18,6 +18,11 @@ interface TimecardTableProps {
   timesheetId: string;
 }
 
+type PendingTimecardAction = {
+  timecardId: string;
+  action: 'approve' | 'reject';
+} | null;
+
 const formatHours = (value: number | string | null | undefined) => {
   if (value === null || value === undefined || value === '') return '0.00';
   const numericValue = Number(value);
@@ -39,10 +44,11 @@ export const TimecardTable = ({ timesheetId }: TimecardTableProps) => {
   const navigate = useNavigate();
   const toast = useToast();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [pendingAction, setPendingAction] = useState<PendingTimecardAction>(null);
   const { data: timecards = [], error, isLoading } = useTimecardsByTimesheet(timesheetId);
-  const { mutate: approveTimecard, isPending: isApprovingOne } = useApproveTimecard();
+  const { mutate: approveTimecard } = useApproveTimecard();
   const { mutate: approveMany, isPending: isApprovingMany } = useBulkApproveTimecards();
-  const { mutate: rejectTimecard, isPending: isRejecting } = useRejectTimecard();
+  const { mutate: rejectTimecard } = useRejectTimecard();
 
   const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
   const allVisibleSelected = timecards.length > 0 && timecards.every((timecard) => selectedSet.has(timecard.timecard_id));
@@ -71,21 +77,35 @@ export const TimecardTable = ({ timesheetId }: TimecardTableProps) => {
   };
 
   const approveOne = (timecard: TimecardEntry) => {
-    approveTimecard(timecard.timecard_id, {
+    const timecardId = timecard.timecard_id;
+    setPendingAction({ timecardId, action: 'approve' });
+    approveTimecard(timecardId, {
       onSuccess: () => toast.success('Timecard approved.', 'Approved'),
       onError: (requestError) => toast.error(requestError.message, 'Approve failed'),
+      onSettled: () => {
+        setPendingAction((current) =>
+          current?.timecardId === timecardId && current.action === 'approve' ? null : current,
+        );
+      },
     });
   };
 
   const rejectOne = (timecard: TimecardEntry) => {
-    rejectTimecard(timecard.timecard_id, {
+    const timecardId = timecard.timecard_id;
+    setPendingAction({ timecardId, action: 'reject' });
+    rejectTimecard(timecardId, {
       onSuccess: () => toast.success('Timecard rejected.', 'Rejected'),
       onError: (requestError) => toast.error(requestError.message, 'Reject failed'),
+      onSettled: () => {
+        setPendingAction((current) =>
+          current?.timecardId === timecardId && current.action === 'reject' ? null : current,
+        );
+      },
     });
   };
 
   const openRow = (timecard: TimecardEntry) => {
-    if (timecard.status === 'exception' || timecard.status === 'approved') {
+    if (timecard.status === 'exception') {
       navigate('/reviewer/timecards/' + timecard.timecard_id + '/exception');
     }
   };
@@ -99,7 +119,7 @@ export const TimecardTable = ({ timesheetId }: TimecardTableProps) => {
           checked={allVisibleSelected}
           onChange={toggleAll}
           aria-label="Select all timecards"
-          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          className="h-4 w-4 rounded border-[var(--border-color)] text-[var(--primary)] focus:ring-[var(--primary)]"
         />
       ),
       accessor: (timecard) => (
@@ -109,7 +129,7 @@ export const TimecardTable = ({ timesheetId }: TimecardTableProps) => {
           onChange={() => toggleOne(timecard.timecard_id)}
           onClick={(event) => event.stopPropagation()}
           aria-label={'Select ' + (timecard.employee_name || 'timecard')}
-          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          className="h-4 w-4 rounded border-[var(--border-color)] text-[var(--primary)] focus:ring-[var(--primary)]"
         />
       ),
     },
@@ -118,14 +138,14 @@ export const TimecardTable = ({ timesheetId }: TimecardTableProps) => {
       header: 'Employee Name',
       accessor: (timecard) => (
         <div className="flex min-w-56 items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-700 dark:bg-blue-950/35 dark:text-blue-300">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary-soft)] text-[var(--primary)]">
             {timecard.status === 'exception' ? <AlertTriangle className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />}
           </div>
           <div className="min-w-0">
-            <p className="truncate font-semibold text-gray-950 dark:text-white">
+            <p className="truncate font-semibold text-[var(--text-primary)]">
               {timecard.employee_name || 'Unknown employee'}
             </p>
-            <p className="mt-0.5 truncate font-mono text-xs text-gray-500 dark:text-gray-400">
+            <p className="mt-0.5 truncate font-mono text-xs text-[var(--text-muted)]">
               {timecard.timecard_id}
             </p>
           </div>
@@ -153,7 +173,7 @@ export const TimecardTable = ({ timesheetId }: TimecardTableProps) => {
       accessor: (timecard) => (
         <div className="flex flex-col gap-1">
           <Badge variant={getStatusVariant(timecard.status)}>{formatStatus(timecard.status)}</Badge>
-          {timecard.severity !== 'none' && <span className="text-xs text-gray-500 dark:text-gray-400">{formatStatus(timecard.severity)} severity</span>}
+          {timecard.severity !== 'none' && <span className="text-xs text-[var(--text-muted)]">{formatStatus(timecard.severity)} severity</span>}
         </div>
       ),
     },
@@ -161,42 +181,49 @@ export const TimecardTable = ({ timesheetId }: TimecardTableProps) => {
       key: 'actions',
       header: <span className="sr-only">Actions</span>,
       className: 'text-right',
-      accessor: (timecard) => (
-        <div className="flex justify-end gap-2" onClick={(event) => event.stopPropagation()}>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            aria-label="Approve timecard"
-            className="h-9 w-9 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-950/25"
-            disabled={isApprovingOne || isApprovingMany}
-            onClick={() => approveOne(timecard)}
-          >
-            <CheckCircle2 className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            aria-label="Reject timecard"
-            className="h-9 w-9 text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/25"
-            disabled={isRejecting}
-            onClick={() => rejectOne(timecard)}
-          >
-            <XCircle className="h-4 w-4" />
-          </Button>
-        </div>
-      ),
+      accessor: (timecard) => {
+        const isApprovingThis = pendingAction?.timecardId === timecard.timecard_id && pendingAction.action === 'approve';
+        const isRejectingThis = pendingAction?.timecardId === timecard.timecard_id && pendingAction.action === 'reject';
+
+        return (
+          <div className="flex justify-end gap-2" onClick={(event) => event.stopPropagation()}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label="Approve timecard"
+              className="h-10 w-10 rounded-full border border-emerald-200 bg-emerald-50 font-bold text-[var(--success-text)] shadow-sm hover:border-emerald-300 hover:bg-[var(--success-bg)] hover:text-[var(--success-text)]"
+              disabled={isApprovingThis || isApprovingMany}
+              isLoading={isApprovingThis}
+              onClick={() => approveOne(timecard)}
+            >
+              <CheckCircle2 className="h-5 w-5 stroke-[2.75]" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label="Reject timecard"
+              className="h-10 w-10 rounded-full border border-red-200 bg-red-50 font-bold text-[var(--danger-text)] shadow-sm hover:border-red-300 hover:bg-[var(--danger-bg)] hover:text-[var(--danger-text)]"
+              disabled={isRejectingThis}
+              isLoading={isRejectingThis}
+              onClick={() => rejectOne(timecard)}
+            >
+              <XCircle className="h-5 w-5 stroke-[2.75]" />
+            </Button>
+          </div>
+        );
+      },
     },
   ];
 
   return (
     <section className="space-y-4">
-      <div className="rounded-lg border border-gray-200 bg-white shadow-sm shadow-gray-950/5 dark:border-gray-800 dark:bg-gray-950">
-        <div className="flex flex-col gap-4 border-b border-gray-200 px-5 py-5 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between">
+      <div className="rounded-lg border border-[var(--border-color)] bg-white shadow-sm shadow-gray-950/5">
+        <div className="flex flex-col gap-4 border-b border-[var(--border-color)] px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-gray-950 dark:text-white">Timecard Entries</h2>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            <h2 className="text-lg font-semibold text-[var(--text-primary)]">Timecard Entries</h2>
+            <p className="mt-1 text-sm text-[var(--text-muted)]">
               Review generated regular, overtime, and double-time totals.
             </p>
           </div>
@@ -223,11 +250,10 @@ export const TimecardTable = ({ timesheetId }: TimecardTableProps) => {
         onRowClick={openRow}
         rowClassName={(timecard) =>
           timecard.status === 'exception'
-            ? 'bg-red-50/30 dark:bg-red-950/10'
+            ? 'bg-red-50/60'
             : ''
         }
       />
     </section>
   );
 };
-

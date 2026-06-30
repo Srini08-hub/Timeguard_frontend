@@ -19,8 +19,8 @@ export const Spinner: React.FC<SpinnerProps> = ({
   };
 
   const variantClasses = {
-    primary: 'border-blue-600 border-t-transparent',
-    secondary: 'border-gray-600 border-t-transparent dark:border-gray-400 dark:border-t-transparent',
+    primary: 'border-[var(--primary)] border-t-transparent',
+    secondary: 'border-[var(--text-muted)] border-t-transparent',
     white: 'border-white border-t-transparent',
   };
 

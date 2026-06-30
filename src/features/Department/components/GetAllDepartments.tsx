@@ -129,17 +129,17 @@ export const GetAllDepartments = ({ clientId, onCreate, onDepartmentClick }: Get
       header: 'Department',
       accessor: (department) => (
         <div className="flex min-w-64 items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-700 ring-1 ring-blue-100 dark:bg-blue-950/35 dark:text-blue-300 dark:ring-blue-900/50">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary-soft)] text-[var(--primary)] ring-1 ring-blue-100">
             <Building2 className="h-4 w-4" />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="truncate font-semibold text-gray-950 dark:text-white">
+              <span className="truncate font-semibold text-[var(--text-primary)]">
                 {department.department_name}
               </span>
-              <ArrowUpRight className="h-3.5 w-3.5 text-gray-400" />
+              <ArrowUpRight className="h-3.5 w-3.5 text-[var(--text-muted)]" />
             </div>
-            <span className="mt-0.5 block truncate font-mono text-xs text-gray-500 dark:text-gray-400">
+            <span className="mt-0.5 block truncate font-mono text-xs text-[var(--text-muted)]">
               {department.department_id}
             </span>
           </div>
@@ -151,7 +151,7 @@ export const GetAllDepartments = ({ clientId, onCreate, onDepartmentClick }: Get
       header: 'Created',
       accessor: (department) => (
         <span className="inline-flex items-center gap-1.5">
-          <CalendarDays className="h-4 w-4 text-gray-400" />
+          <CalendarDays className="h-4 w-4 text-[var(--text-muted)]" />
           {formatDate(department.created_at)}
         </span>
       ),
@@ -160,7 +160,7 @@ export const GetAllDepartments = ({ clientId, onCreate, onDepartmentClick }: Get
       key: 'client',
       header: 'Client ID',
       accessor: (department) => (
-        <span className="font-mono text-xs text-gray-600 dark:text-gray-300">
+        <span className="font-mono text-xs text-[var(--text-secondary)]">
           {department.client_id}
         </span>
       ),
@@ -186,7 +186,7 @@ export const GetAllDepartments = ({ clientId, onCreate, onDepartmentClick }: Get
             variant="ghost"
             size="icon"
             aria-label={'Delete ' + department.department_name}
-            className="h-9 w-9 text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/25"
+            className="h-9 w-9 text-[var(--danger-text)] hover:bg-[var(--danger-bg)] hover:text-[var(--danger-text)]"
             disabled={deletingDepartmentId === department.department_id}
             onClick={() => handleDelete(department)}
           >
@@ -199,13 +199,13 @@ export const GetAllDepartments = ({ clientId, onCreate, onDepartmentClick }: Get
 
   return (
     <section className="space-y-4 animate-in fade-in duration-300">
-      <div className="rounded-lg border border-gray-200 bg-white shadow-sm shadow-gray-950/5 dark:border-gray-800 dark:bg-gray-950">
-        <div className="flex flex-col gap-4 border-b border-gray-200 px-5 py-5 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between">
+      <div className="rounded-lg border border-[var(--border-color)] bg-white shadow-sm shadow-gray-950/5">
+        <div className="flex flex-col gap-4 border-b border-[var(--border-color)] bg-[var(--bg-card-soft)] px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-gray-950 dark:text-white">
+            <h2 className="text-lg font-semibold text-[var(--text-primary)]">
               Departments
             </h2>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            <p className="mt-1 text-sm text-[var(--text-muted)]">
               Department records and employee assignment entry points for this client.
             </p>
           </div>
@@ -231,20 +231,20 @@ export const GetAllDepartments = ({ clientId, onCreate, onDepartmentClick }: Get
             )}
           </div>
         </div>
-        <div className="grid border-b border-gray-200 dark:border-gray-800 sm:grid-cols-2">
-          <div className="border-b border-gray-200 px-5 py-4 dark:border-gray-800 sm:border-b-0 sm:border-r">
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+        <div className="grid gap-3 border-b border-[var(--border-color)] bg-white p-5 sm:grid-cols-2">
+          <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card-soft)] px-5 py-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
               Total departments
             </p>
-            <p className="mt-2 text-2xl font-semibold text-gray-950 dark:text-white">
+            <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">
               {departments.length}
             </p>
           </div>
-          <div className="px-5 py-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+          <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card-soft)] px-5 py-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
               Current page
             </p>
-            <p className="mt-2 text-2xl font-semibold text-gray-950 dark:text-white">
+            <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">
               {safeCurrentPage} / {totalPages}
             </p>
           </div>
@@ -287,7 +287,7 @@ export const GetAllDepartments = ({ clientId, onCreate, onDepartmentClick }: Get
             fullWidth
           />
 
-          <div className="flex justify-end gap-3 border-t border-gray-100 pt-5 dark:border-gray-800">
+          <div className="flex justify-end gap-3 border-t border-[var(--border-color)] pt-5">
             <Button
               type="button"
               variant="outline"
@@ -305,4 +305,3 @@ export const GetAllDepartments = ({ clientId, onCreate, onDepartmentClick }: Get
     </section>
   );
 };
-

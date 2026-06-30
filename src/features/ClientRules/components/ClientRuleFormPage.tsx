@@ -170,10 +170,10 @@ export const ClientRuleFormPage = () => {
 
   if (isDepartmentLoading || isRuleLoading) {
     return (
-      <div className="flex min-h-96 items-center justify-center rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950">
+      <div className="flex min-h-96 items-center justify-center rounded-lg border border-[var(--border-color)] bg-white">
         <div className="flex flex-col items-center gap-3">
           <Spinner />
-          <p className="text-sm text-gray-500 dark:text-gray-400">Loading rule form...</p>
+          <p className="text-sm text-[var(--text-muted)]">Loading rule form...</p>
         </div>
       </div>
     );
@@ -193,33 +193,33 @@ export const ClientRuleFormPage = () => {
         </Button>
       </div>
 
-      <section className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm shadow-gray-950/5 dark:border-gray-800 dark:bg-gray-950">
-        <div className="border-b border-gray-200 bg-gray-50 px-6 py-6 dark:border-gray-800 dark:bg-gray-900/60">
+      <section className="overflow-hidden rounded-lg border border-[var(--border-color)] bg-white shadow-sm shadow-gray-950/5">
+        <div className="border-b border-[var(--border-color)] bg-[var(--bg-card-soft)] px-6 py-6">
           <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
             <div className="flex min-w-0 items-center gap-4">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-white shadow-sm dark:bg-white dark:text-gray-950">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)] text-white shadow-sm shadow-blue-700/15">
                 <ReceiptText className="h-6 w-6" />
               </div>
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">
+                  <h1 className="text-2xl font-semibold tracking-tight text-[var(--text-primary)]">
                     {isEditing ? 'Update Client Rule' : 'Add Client Rule'}
                   </h1>
                   <Badge variant="info">
                     {department?.department_name || 'Department'}
                   </Badge>
                 </div>
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                <p className="mt-1 text-sm text-[var(--text-muted)]">
                   {client?.client_name || 'Client'} pay policy configuration
                 </p>
               </div>
             </div>
 
-            <div className="rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-950">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            <div className="rounded-lg border border-[var(--border-color)] bg-white px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                 Department ID
               </p>
-              <p className="mt-1 max-w-72 truncate font-mono text-sm text-gray-950 dark:text-white">
+              <p className="mt-1 max-w-72 truncate font-mono text-sm text-[var(--text-primary)]">
                 {departmentId}
               </p>
             </div>
@@ -280,33 +280,33 @@ export const ClientRuleFormPage = () => {
                 />
               </div>
 
-              <div className="rounded-lg border border-gray-200 bg-gray-50 p-5 dark:border-gray-800 dark:bg-gray-900/60">
+              <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card-soft)] p-5">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex items-start gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-gray-700 ring-1 ring-gray-200 dark:bg-gray-950 dark:text-gray-300 dark:ring-gray-800">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-[var(--text-secondary)] ring-1 ring-[var(--border-color)]">
                       {formState.breakAutoDeduct ? (
-                        <BadgeCheck className="h-5 w-5 text-emerald-500" />
+                        <BadgeCheck className="h-5 w-5 text-[var(--success-text)]" />
                       ) : (
                         <Clock3 className="h-5 w-5" />
                       )}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-gray-950 dark:text-white">
+                      <p className="text-sm font-semibold text-[var(--text-primary)]">
                         Break deduction
                       </p>
-                      <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                      <p className="mt-1 text-sm text-[var(--text-muted)]">
                         {formState.breakAutoDeduct ? 'Automatic deduction enabled' : 'Manual review enabled'}
                       </p>
                     </div>
                   </div>
 
-                  <label className="inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
+                  <label className="inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-[var(--text-secondary)]">
                     <input
                       type="checkbox"
                       checked={formState.breakAutoDeduct}
                       onChange={(event) => updateField('breakAutoDeduct', event.target.checked)}
                       disabled={isSubmitting}
-                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-950"
+                      className="h-4 w-4 rounded border-[var(--border-color)] text-[var(--primary)] focus:ring-[var(--primary)]"
                     />
                     Auto deduct
                   </label>
@@ -329,35 +329,35 @@ export const ClientRuleFormPage = () => {
               </div>
 
               {formError && (
-                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-950/40 dark:bg-red-950/20 dark:text-red-300">
+                <div className="rounded-lg border border-red-200 bg-[var(--danger-bg)] px-4 py-3 text-sm font-medium text-[var(--danger-text)]">
                   {formError}
                 </div>
               )}
             </div>
 
-            <aside className="space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-5 dark:border-gray-800 dark:bg-gray-900/60">
+            <aside className="space-y-4 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card-soft)] p-5">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                   Client
                 </p>
-                <p className="mt-1 text-sm font-semibold text-gray-950 dark:text-white">
+                <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">
                   {client?.client_name || clientId}
                 </p>
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                   Department
                 </p>
-                <p className="mt-1 text-sm font-semibold text-gray-950 dark:text-white">
+                <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">
                   {department?.department_name || departmentId}
                 </p>
               </div>
               {ruleId && (
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                     Rule ID
                   </p>
-                  <p className="mt-1 break-all font-mono text-xs text-gray-700 dark:text-gray-300">
+                  <p className="mt-1 break-all font-mono text-xs text-[var(--text-secondary)]">
                     {ruleId}
                   </p>
                 </div>
@@ -365,7 +365,7 @@ export const ClientRuleFormPage = () => {
             </aside>
           </div>
 
-          <div className="mt-6 flex flex-col-reverse gap-3 border-t border-gray-100 pt-5 dark:border-gray-800 sm:flex-row sm:justify-end">
+          <div className="mt-6 flex flex-col-reverse gap-3 border-t border-[var(--border-color)] pt-5 sm:flex-row sm:justify-end">
             <Button
               type="button"
               variant="outline"
@@ -388,4 +388,3 @@ export const ClientRuleFormPage = () => {
     </div>
   );
 };
-

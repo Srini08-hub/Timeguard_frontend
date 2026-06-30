@@ -95,6 +95,10 @@ const getStatusStepState = (currentStatus: EmailStatus, step: EmailStatus) => {
     return step === 'received' || step === 'classified' ? 'complete' : 'pending';
   }
 
+  if (currentStatus === 'processed') {
+    return 'complete';
+  }
+
   const currentIndex = statusSteps.indexOf(currentStatus);
   const stepIndex = statusSteps.indexOf(step);
 
@@ -157,14 +161,14 @@ export const MailDetails = () => {
       header: 'Attachment',
       accessor: (attachment) => (
         <div className="flex min-w-64 items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-700 ring-1 ring-blue-100 dark:bg-blue-950/35 dark:text-blue-300 dark:ring-blue-900/50">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary-soft)] text-[var(--primary)] ring-1 ring-blue-100">
             <FileText className="h-4 w-4" />
           </div>
           <div className="min-w-0">
-            <p className="truncate font-semibold text-gray-950 dark:text-white">
+            <p className="truncate font-semibold text-[var(--text-primary)]">
               {attachment.filename}
             </p>
-            <p className="mt-0.5 truncate font-mono text-xs text-gray-500 dark:text-gray-400">
+            <p className="mt-0.5 truncate font-mono text-xs text-[var(--text-muted)]">
               {attachment.attachment_id}
             </p>
           </div>
@@ -189,7 +193,7 @@ export const MailDetails = () => {
       key: 'failure',
       header: 'Failure Details',
       accessor: (attachment) => (
-        <span className="block max-w-md truncate text-sm text-gray-600 dark:text-gray-300">
+        <span className="block max-w-md truncate text-sm text-[var(--text-secondary)]">
           {attachment.failure_reason || attachment.failure_stage || 'No failure recorded'}
         </span>
       ),
@@ -205,14 +209,14 @@ export const MailDetails = () => {
               href={attachment.attachment_url}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-950 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[var(--text-muted)] transition-colors hover:bg-[var(--bg-card-soft)] hover:text-[var(--text-primary)]"
               aria-label={'Open ' + attachment.filename}
               onClick={(event) => event.stopPropagation()}
             >
               <ExternalLink className="h-4 w-4" />
             </a>
           ) : (
-            <span className="text-xs text-gray-400 dark:text-gray-600">No link</span>
+            <span className="text-xs text-[var(--text-muted)]">No link</span>
           )}
         </div>
       ),
@@ -221,10 +225,10 @@ export const MailDetails = () => {
 
   if (isLookupLoading) {
     return (
-      <div className="flex min-h-96 items-center justify-center rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950">
+      <div className="flex min-h-96 items-center justify-center rounded-lg border border-[var(--border-color)] bg-white">
         <div className="flex flex-col items-center gap-3">
           <Spinner />
-          <p className="text-sm text-gray-500 dark:text-gray-400">Loading mail details...</p>
+          <p className="text-sm text-[var(--text-muted)]">Loading mail details...</p>
         </div>
       </div>
     );
@@ -232,11 +236,11 @@ export const MailDetails = () => {
 
   if (!selectedEmail) {
     return (
-      <div className="rounded-lg border border-red-100 bg-red-50/70 p-8 text-center dark:border-red-950/40 dark:bg-red-950/15">
-        <h1 className="text-lg font-semibold text-red-800 dark:text-red-300">
+      <div className="rounded-lg border border-red-200 bg-[var(--danger-bg)] p-8 text-center">
+        <h1 className="text-lg font-semibold text-[var(--danger-text)]">
           Mail unavailable
         </h1>
-        <p className="mt-2 text-sm text-red-700 dark:text-red-400">
+        <p className="mt-2 text-sm text-[var(--danger-text)]">
           {lookupError?.message || 'The selected mail could not be found.'}
         </p>
         <Button className="mt-5" variant="outline" onClick={() => navigate('/reviewer/emails')}>
@@ -272,33 +276,33 @@ export const MailDetails = () => {
         </Button>
       </div>
 
-      <section className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm shadow-gray-950/5 dark:border-gray-800 dark:bg-gray-950">
-        <div className="border-b border-gray-200 bg-gray-50 px-6 py-6 dark:border-gray-800 dark:bg-gray-900/60">
+      <section className="overflow-hidden rounded-lg border border-[var(--border-color)] bg-white shadow-sm shadow-gray-950/5">
+        <div className="border-b border-[var(--border-color)] bg-[var(--bg-card-soft)] px-6 py-6">
           <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
             <div className="flex min-w-0 items-center gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm shadow-blue-600/25">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-[var(--primary)] text-white shadow-sm shadow-blue-700/15">
                 <Mail className="h-7 w-7" />
               </div>
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="truncate text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">
+                  <h1 className="truncate text-2xl font-semibold tracking-tight text-[var(--text-primary)]">
                     {getSubject(selectedEmail)}
                   </h1>
                   <Badge variant={getStatusVariant(selectedEmail.status)}>
                     {statusLabels[selectedEmail.status] || selectedEmail.status}
                   </Badge>
                 </div>
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                <p className="mt-1 text-sm text-[var(--text-muted)]">
                   {selectedEmail.sender_email}
                 </p>
               </div>
             </div>
 
-            <div className="rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-950">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            <div className="rounded-lg border border-[var(--border-color)] bg-white px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                 Live refresh
               </p>
-              <p className="mt-1 text-sm font-semibold text-gray-950 dark:text-white">
+              <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">
                 Every 3 seconds
               </p>
             </div>
@@ -317,10 +321,10 @@ export const MailDetails = () => {
                     className={
                       'flex h-10 w-10 shrink-0 items-center justify-center rounded-full border text-sm font-semibold transition-colors ' +
                       (isComplete
-                        ? 'border-emerald-600 bg-emerald-600 text-white'
+                        ? 'border-[var(--success-border)] bg-[var(--success-border)] text-white'
                         : isActive
-                          ? 'border-blue-600 bg-blue-600 text-white shadow-sm shadow-blue-600/25'
-                          : 'border-gray-200 bg-white text-gray-400 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-500')
+                          ? 'border-[var(--primary)] bg-[var(--primary)] text-white shadow-sm shadow-blue-700/15'
+                          : 'border-[var(--border-color)] bg-white text-[var(--text-muted)]')
                     }
                   >
                     {isComplete ? <Check className="h-4 w-4" /> : index + 1}
@@ -329,12 +333,12 @@ export const MailDetails = () => {
                     <p
                       className={
                         'text-sm font-semibold ' +
-                        (isComplete || isActive ? 'text-gray-950 dark:text-white' : 'text-gray-500 dark:text-gray-400')
+                        (isComplete || isActive ? 'text-[var(--text-primary)]' : 'text-[var(--text-muted)]')
                       }
                     >
                       {statusLabels[step]}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-xs text-[var(--text-muted)]">
                       {isComplete ? 'Completed' : isActive ? 'Current step' : 'Waiting'}
                     </p>
                   </div>
@@ -342,7 +346,7 @@ export const MailDetails = () => {
                     <div
                       className={
                         'hidden h-px flex-1 lg:block ' +
-                        (isComplete ? 'bg-emerald-500' : 'bg-gray-200 dark:bg-gray-800')
+                        (isComplete ? 'bg-emerald-500' : 'bg-[var(--border-color)]')
                       }
                     />
                   )}
@@ -352,7 +356,7 @@ export const MailDetails = () => {
           </div>
 
           {(selectedEmail.status === 'failed' || selectedEmail.status === 'not_processed') && (
-            <div className="mt-5 flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-950/40 dark:bg-red-950/15 dark:text-red-300">
+            <div className="mt-5 flex items-start gap-3 rounded-lg border border-red-200 bg-[var(--danger-bg)] p-4 text-sm text-[var(--danger-text)]">
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
               <div>
                 <p className="font-semibold">Processing stopped</p>
@@ -365,34 +369,34 @@ export const MailDetails = () => {
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm shadow-gray-950/5 dark:border-gray-800 dark:bg-gray-950">
+      <section className="overflow-hidden rounded-lg border border-[var(--border-color)] bg-white shadow-sm shadow-gray-950/5">
         <div className="grid md:grid-cols-3">
-          <div className="border-b border-gray-200 p-6 dark:border-gray-800 md:border-b-0 md:border-r">
+          <div className="border-b border-[var(--border-color)] p-6 md:border-b-0 md:border-r">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/35 dark:text-blue-300">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary-soft)] text-[var(--primary)]">
                 <Inbox className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                   Mail type
                 </p>
-                <p className="mt-1 text-sm font-semibold text-gray-950 dark:text-white">
+                <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">
                   {mailType}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="border-b border-gray-200 p-6 dark:border-gray-800 md:border-b-0 md:border-r">
+          <div className="border-b border-[var(--border-color)] p-6 md:border-b-0 md:border-r">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-300">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--success-bg)] text-[var(--success-text)]">
                 <ShieldCheck className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                   Attachments
                 </p>
-                <p className="mt-1 text-sm font-semibold text-gray-950 dark:text-white">
+                <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">
                   {attachments.length}
                 </p>
               </div>
@@ -401,14 +405,14 @@ export const MailDetails = () => {
 
           <div className="p-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 text-gray-600 dark:bg-gray-900 dark:text-gray-300">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--bg-card-soft)] text-[var(--text-secondary)]">
                 <FileText className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                   Mail ID
                 </p>
-                <p className="mt-1 max-w-56 truncate font-mono text-sm font-semibold text-gray-950 dark:text-white">
+                <p className="mt-1 max-w-56 truncate font-mono text-sm font-semibold text-[var(--text-primary)]">
                   {selectedEmail.email_id}
                 </p>
               </div>
@@ -417,27 +421,27 @@ export const MailDetails = () => {
         </div>
       </section>
 
-      <section className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm shadow-gray-950/5 dark:border-gray-800 dark:bg-gray-950">
-        <h2 className="text-lg font-semibold text-gray-950 dark:text-white">Mail Content</h2>
-        <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-900/60">
-          <p className="whitespace-pre-wrap text-sm leading-6 text-gray-700 dark:text-gray-300">
+      <section className="rounded-lg border border-[var(--border-color)] bg-white p-5 shadow-sm shadow-gray-950/5">
+        <h2 className="text-lg font-semibold text-[var(--text-primary)]">Mail Content</h2>
+        <div className="mt-4 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card-soft)] p-4">
+          <p className="whitespace-pre-wrap text-sm leading-6 text-[var(--text-secondary)]">
             {selectedEmail.body || 'No body content available.'}
           </p>
         </div>
       </section>
 
       <section className="space-y-4">
-        <div className="rounded-lg border border-gray-200 bg-white shadow-sm shadow-gray-950/5 dark:border-gray-800 dark:bg-gray-950">
-          <div className="flex flex-col gap-4 border-b border-gray-200 px-5 py-5 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between">
+        <div className="rounded-lg border border-[var(--border-color)] bg-white shadow-sm shadow-gray-950/5">
+          <div className="flex flex-col gap-4 border-b border-[var(--border-color)] px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-gray-950 dark:text-white">
+              <h2 className="text-lg font-semibold text-[var(--text-primary)]">
                 Attachments
               </h2>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              <p className="mt-1 text-sm text-[var(--text-muted)]">
                 Review document type, processing status, and failure details for this mail.
               </p>
             </div>
-            <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300">
+            <div className="flex items-center gap-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card-soft)] px-3 py-2 text-sm font-medium text-[var(--text-secondary)]">
               <ShieldCheck className="h-4 w-4 text-emerald-500" />
               {attachments.length} records
             </div>

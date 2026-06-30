@@ -2,10 +2,11 @@ import React from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { AppLayout } from '../../../components/layouts';
 import { useAuth, useLogout } from '../../auth/hooks';
-import { Database, Mail } from 'lucide-react';
+import { Database, Mail, ClipboardList } from 'lucide-react';
 
 const reviewerItems = [
   { label: 'Timesheets', href: 'timesheets', icon: Database },
+  { label: 'Timecards', href: 'timecards', icon: ClipboardList },
   { label: 'Mail', href: 'emails', icon: Mail },
 ];
 
@@ -21,9 +22,11 @@ const Reviewer: React.FC = () => {
 
   const activePageTitle = location.pathname.includes('/emails')
     ? 'Mail'
-    : location.pathname.includes('/timesheets')
-      ? 'Timesheets'
-      : reviewerItems.find((item) => item.href === (location.pathname.split('/').pop() ?? ''))?.label ?? 'Reviewer';
+    : location.pathname.includes('/timecards') && !location.pathname.includes('/exception')
+      ? 'Timecards'
+      : location.pathname.includes('/timesheets')
+        ? 'Timesheets'
+        : reviewerItems.find((item) => item.href === (location.pathname.split('/').pop() ?? ''))?.label ?? 'Reviewer';
 
   return (
     <AppLayout

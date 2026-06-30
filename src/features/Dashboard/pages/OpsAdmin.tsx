@@ -2,13 +2,11 @@ import React from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { AppLayout } from '../../../components/layouts';
 import { useAuth, useLogout } from '../../auth/hooks';
-import { Shield, Users } from 'lucide-react';
+import { Users } from 'lucide-react';
 
 const OpsAdminNavItems = [
   { label: 'Employees', href: 'employees', icon: Users },
   { label: 'Clients', href: 'clients', icon: Users },
-
-  { label: 'Profile', href: 'profile', icon: Shield },
 ];
 
 const OpsAdmin: React.FC = () => {

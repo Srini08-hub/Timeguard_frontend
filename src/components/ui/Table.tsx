@@ -52,9 +52,9 @@ export function Table<T>({
 }: TableProps<T>) {
   return (
     <div className="flex w-full flex-col">
-      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm shadow-gray-950/5 dark:border-gray-800 dark:bg-gray-950">
-        <table className="w-full border-collapse text-left text-sm text-gray-600 dark:text-gray-300">
-          <thead className="border-b border-gray-200 bg-gray-50 text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300">
+      <div className="overflow-x-auto rounded-lg border border-[var(--border-color)] bg-white shadow-sm shadow-gray-950/5">
+        <table className="w-full border-collapse text-left text-sm text-[var(--text-secondary)]">
+          <thead className="border-b border-[var(--border-color)] bg-[var(--table-header-bg)] text-[var(--text-secondary)]">
             <tr>
               {columns.map((column) => (
                 <th
@@ -67,13 +67,13 @@ export function Table<T>({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+          <tbody className="divide-y divide-[var(--border-color)]">
             {isLoading ? (
               Array.from({ length: 6 }).map((_, rowIndex) => (
                 <tr key={'skeleton-row-' + rowIndex} className="animate-pulse">
                   {columns.map((column) => (
                     <td key={'skeleton-cell-' + column.key} className="px-5 py-4">
-                      <div className="h-4 w-3/4 rounded-md bg-gray-200 dark:bg-gray-800" />
+                      <div className="h-4 w-3/4 rounded-md bg-[var(--bg-card-soft)]" />
                     </td>
                   ))}
                 </tr>
@@ -82,20 +82,20 @@ export function Table<T>({
               <tr>
                 <td colSpan={columns.length} className="px-6 py-12 text-center">
                   <div className="flex flex-col items-center justify-center gap-2">
-                    <AlertCircle className="h-8 w-8 text-red-500" />
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                    <AlertCircle className="h-8 w-8 text-[var(--danger-text)]" />
+                    <p className="text-sm font-semibold text-[var(--text-primary)]">
                       Failed to load data
                     </p>
-                    <p className="text-xs text-red-500">{error}</p>
+                    <p className="text-xs text-[var(--danger-text)]">{error}</p>
                   </div>
                 </td>
               </tr>
             ) : data.length === 0 ? (
               <tr>
                 <td colSpan={columns.length} className="px-6 py-12 text-center">
-                  <div className="flex flex-col items-center justify-center gap-3 text-gray-400 dark:text-gray-600">
+                  <div className="flex flex-col items-center justify-center gap-3 text-[var(--text-muted)]">
                     <Inbox className="h-10 w-10 stroke-1" />
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    <p className="text-sm font-medium text-[var(--text-secondary)]">
                       {emptyMessage}
                     </p>
                   </div>
@@ -105,7 +105,7 @@ export function Table<T>({
               data.map((row, rowIndex) => {
                 const clickable = Boolean(onRowClick);
                 const interactiveClasses = clickable
-                  ? 'cursor-pointer focus:bg-blue-50/60 focus:outline-none dark:focus:bg-blue-950/20'
+                  ? 'cursor-pointer focus:bg-[var(--table-row-hover)] focus:outline-none'
                   : '';
 
                 return (
@@ -121,7 +121,7 @@ export function Table<T>({
                         onRowClick?.(row);
                       }
                     }}
-                    className={'transition-colors hover:bg-gray-50/80 dark:hover:bg-gray-900/70 ' + interactiveClasses + ' ' + (rowClassName?.(row) || '')}
+                    className={'bg-white text-[var(--text-primary)] transition-colors hover:bg-[var(--table-row-hover)] ' + interactiveClasses + ' ' + (rowClassName?.(row) || '')}
                   >
                     {columns.map((column) => {
                       const value =
@@ -132,7 +132,7 @@ export function Table<T>({
                       return (
                         <td
                           key={'cell-' + column.key}
-                          className={'whitespace-nowrap px-5 py-4 align-middle text-gray-900 dark:text-gray-100 ' + (column.className || '')}
+                          className={'whitespace-nowrap px-5 py-4 align-middle text-[var(--text-primary)] ' + (column.className || '')}
                         >
                           {value}
                         </td>

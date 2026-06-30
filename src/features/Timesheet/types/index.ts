@@ -1,4 +1,4 @@
-﻿export interface TimesheetPayloadBlock {
+export interface TimesheetPayloadBlock {
   error?: string | null;
   success?: boolean;
   extraction?: {
@@ -66,8 +66,7 @@ export interface Timesheet {
   email_id: string;
   client_name: string | null;
   week_ending: string | null;
-  merged_payload: TimesheetExtractedPayload | null;
-  enriched_payload?: TimesheetExtractedPayload | null;
+  payload: TimesheetExtractedPayload | null;
   status?: TimesheetStatus | string | null;
   created_at?: string | null;
 }
@@ -105,6 +104,11 @@ export interface TimecardEntry {
   reg_hours?: number | string | null;
   ot_hours?: number | string | null;
   dt_hours?: number | string | null;
+  pay_rate?: number | string | null;
+  regular_pay?: number | string | null;
+  ot_pay?: number | string | null;
+  dt_pay?: number | string | null;
+  gross_pay?: number | string | null;
   status: TimecardStatus | string;
   severity: ExceptionSeverity | string;
   review_comment?: string | null;

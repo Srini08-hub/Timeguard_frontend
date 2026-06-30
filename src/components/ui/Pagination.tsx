@@ -79,7 +79,7 @@ export const Pagination: React.FC<PaginationProps> = ({
     <nav
       role="navigation"
       aria-label="Pagination Navigation"
-      className="flex items-center justify-between border-t border-gray-100 dark:border-gray-800 px-4 py-3 sm:px-6 mt-4"
+      className="flex items-center justify-between border-t border-[var(--border-color)] px-4 py-3 sm:px-6 mt-4"
     >
       {/* Mobile Pagination View */}
       <div className="flex flex-1 justify-between sm:hidden">
@@ -92,7 +92,7 @@ export const Pagination: React.FC<PaginationProps> = ({
         >
           Previous
         </Button>
-        <span className="text-sm text-gray-750 dark:text-gray-250 self-center">
+        <span className="text-sm text-[var(--text-secondary)] self-center">
           Page {currentPage} of {totalPages}
         </span>
         <Button
@@ -110,9 +110,9 @@ export const Pagination: React.FC<PaginationProps> = ({
       {/* Desktop Pagination View */}
       <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm text-gray-700 dark:text-gray-300">
-            Showing page <span className="font-semibold text-gray-900 dark:text-white">{currentPage}</span> of{' '}
-            <span className="font-semibold text-gray-900 dark:text-white">{totalPages}</span>
+          <p className="text-sm text-[var(--text-secondary)]">
+            Showing page <span className="font-semibold text-[var(--text-primary)]">{currentPage}</span> of{' '}
+            <span className="font-semibold text-[var(--text-primary)]">{totalPages}</span>
           </p>
         </div>
         <div>
@@ -122,7 +122,7 @@ export const Pagination: React.FC<PaginationProps> = ({
                 type="button"
                 disabled={currentPage === 1}
                 onClick={() => onPageChange(currentPage - 1)}
-                className="inline-flex items-center rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] px-2 py-2 text-sm font-medium text-[var(--text-muted)] hover:bg-[var(--bg-card-soft)] hover:text-[var(--text-primary)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label="Previous Page"
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -133,7 +133,7 @@ export const Pagination: React.FC<PaginationProps> = ({
               if (page === '...') {
                 return (
                   <li key={`dots-${index}`}>
-                    <span className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-500">
+                    <span className="inline-flex items-center px-3 py-2 text-sm font-medium text-[var(--text-muted)]">
                       ...
                     </span>
                   </li>
@@ -150,8 +150,8 @@ export const Pagination: React.FC<PaginationProps> = ({
                     aria-label={`Go to page ${page}`}
                     className={`inline-flex items-center justify-center rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer min-w-9
                       ${isCurrent
-                        ? 'z-10 bg-blue-600 border-blue-600 text-white hover:bg-blue-700'
-                        : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                        ? 'z-10 bg-[var(--primary)] border-[var(--primary)] text-white hover:bg-[var(--primary-hover)]'
+                        : 'bg-[var(--bg-card)] border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--bg-card-soft)] hover:text-[var(--text-primary)]'
                       }
                     `}
                   >
@@ -166,7 +166,7 @@ export const Pagination: React.FC<PaginationProps> = ({
                 type="button"
                 disabled={currentPage === totalPages}
                 onClick={() => onPageChange(currentPage + 1)}
-                className="inline-flex items-center rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 py-2 text-sm font-medium text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] px-2 py-2 text-sm font-medium text-[var(--text-muted)] hover:bg-[var(--bg-card-soft)] hover:text-[var(--text-primary)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label="Next Page"
               >
                 <ChevronRight className="h-4 w-4" />

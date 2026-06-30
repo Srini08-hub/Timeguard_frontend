@@ -98,7 +98,7 @@ export const Modal: React.FC<ModalProps> = ({
     >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
+        className="fixed inset-0 bg-gray-900/35 backdrop-blur-xs transition-opacity"
         onClick={onClose}
       />
 
@@ -106,13 +106,13 @@ export const Modal: React.FC<ModalProps> = ({
       <div
         ref={modalRef}
         tabIndex={-1}
-        className={`relative w-full bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-800 flex flex-col focus:outline-none overflow-hidden animate-in fade-in zoom-in-95 duration-200 ${sizeClasses[size]}`}
+        className={`relative w-full bg-[var(--bg-card)] rounded-xl shadow-xl shadow-gray-950/15 border border-[var(--border-color)] flex flex-col focus:outline-none overflow-hidden animate-in fade-in zoom-in-95 duration-200 ${sizeClasses[size]}`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 px-6 py-4">
+        <div className="flex items-center justify-between border-b border-[var(--border-color)] bg-[var(--bg-card-soft)] px-6 py-4">
           <h2
             id="modal-title"
-            className="text-lg font-semibold text-gray-900 dark:text-white"
+            className="text-lg font-semibold text-[var(--text-primary)]"
           >
             {title || 'Modal Title'}
           </h2>
@@ -120,7 +120,7 @@ export const Modal: React.FC<ModalProps> = ({
             type="button"
             onClick={onClose}
             aria-label="Close modal"
-            className="text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg p-1.5 transition-colors cursor-pointer"
+            className="text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)] rounded-lg p-1.5 transition-colors cursor-pointer"
           >
             <svg
               className="h-5 w-5"
@@ -139,13 +139,13 @@ export const Modal: React.FC<ModalProps> = ({
         </div>
 
         {/* Content */}
-        <div className="flex-1 px-6 py-4 overflow-y-auto text-gray-700 dark:text-gray-300">
+        <div className="flex-1 px-6 py-4 overflow-y-auto text-[var(--text-secondary)]">
           {children}
         </div>
 
         {/* Footer */}
         {footer && (
-          <div className="flex items-center justify-end gap-3 border-t border-gray-100 dark:border-gray-800 px-6 py-4 bg-gray-50 dark:bg-gray-900/50">
+          <div className="flex items-center justify-end gap-3 border-t border-[var(--border-color)] px-6 py-4 bg-[var(--bg-card-soft)]">
             {footer}
           </div>
         )}

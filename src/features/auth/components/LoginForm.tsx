@@ -41,7 +41,7 @@ export const LoginForm: React.FC = () => {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-xl flex items-start gap-3 text-red-650 dark:text-red-400 text-sm animate-in fade-in duration-200">
+        <div className="p-4 bg-[var(--danger-bg)] border border-red-200 rounded-lg flex items-start gap-3 text-[var(--danger-text)] text-sm animate-in fade-in duration-200">
           <ShieldAlert className="h-5 w-5 shrink-0 mt-0.5" />
           <div>
             <p className="font-semibold">Authentication Failed</p>
@@ -70,7 +70,7 @@ export const LoginForm: React.FC = () => {
       <Input
         label="Password"
         type="password"
-        placeholder="••••••••"
+        placeholder="Password"
         value={password}
         onChange={(e) => {
           setPassword(e.target.value);
@@ -89,7 +89,7 @@ export const LoginForm: React.FC = () => {
         variant="primary"
         size="lg"
         isLoading={isLoading}
-        className="w-full justify-center mt-2 cursor-pointer shadow-md shadow-blue-500/10 hover:shadow-blue-500/20"
+        className="w-full justify-center mt-2 cursor-pointer shadow-sm shadow-blue-700/15 hover:shadow-blue-700/20"
       >
         Sign In
       </Button>

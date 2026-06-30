@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, LogOut, Settings, User } from 'lucide-react';
+import { ChevronDown, LogOut, User } from 'lucide-react';
 
 export interface UserMenuProps {
   user?: {
@@ -60,37 +60,37 @@ export const UserMenu: React.FC<UserMenuProps> = ({
         onClick={toggleMenu}
         aria-expanded={isOpen}
         aria-haspopup="true"
-        className="flex h-10 items-center gap-2 rounded-lg border border-transparent px-1.5 transition-colors hover:border-gray-200 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:hover:border-gray-800 dark:hover:bg-gray-900 dark:focus:ring-offset-gray-950 cursor-pointer"
+        className="flex h-10 items-center gap-2 rounded-lg border border-transparent px-1.5 transition-colors hover:border-[var(--border-color)] hover:bg-[var(--bg-card-soft)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 focus:ring-offset-[var(--bg-main)] cursor-pointer"
       >
         {user.avatarUrl ? (
           <img
             src={user.avatarUrl}
             alt={user.name}
-            className="h-8 w-8 rounded-lg object-cover ring-1 ring-gray-200 dark:ring-gray-800"
+            className="h-8 w-8 rounded-lg object-cover ring-1 ring-[var(--border-color)]"
           />
         ) : (
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-900 text-sm font-semibold tracking-wide text-white dark:bg-blue-600">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--primary)] text-sm font-semibold tracking-wide text-white shadow-sm shadow-blue-700/15">
             {getInitials(user.name)}
           </div>
         )}
         <div className="hidden min-w-0 flex-col text-left md:flex">
-          <span className="max-w-32 truncate text-xs font-semibold text-gray-900 dark:text-gray-100">
+          <span className="max-w-32 truncate text-xs font-semibold text-[var(--text-primary)]">
             {user.name}
           </span>
-          <span className="max-w-32 truncate text-xs text-gray-500 dark:text-gray-400">
+          <span className="max-w-32 truncate text-xs text-[var(--text-muted)]">
             {user.email}
           </span>
         </div>
-        <ChevronDown className={`hidden h-4 w-4 text-gray-400 transition-transform md:block ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`hidden h-4 w-4 text-[var(--text-muted)] transition-transform md:block ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 z-50 mt-2 w-64 overflow-hidden rounded-lg border border-gray-200 bg-white py-2 shadow-xl shadow-gray-950/10 dark:border-gray-800 dark:bg-gray-950 dark:shadow-black/30">
-          <div className="border-b border-gray-100 px-4 pb-3 pt-2 dark:border-gray-800">
-            <p className="text-sm font-semibold text-gray-900 dark:text-white">
+        <div className="absolute right-0 z-50 mt-2 w-64 overflow-hidden rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] py-2 shadow-xl shadow-gray-950/10">
+          <div className="border-b border-[var(--border-color)] bg-[var(--bg-card-soft)] px-4 pb-3 pt-2">
+            <p className="text-sm font-semibold text-[var(--text-primary)]">
               {user.name}
             </p>
-            <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+            <p className="truncate text-xs text-[var(--text-muted)]">
               {user.email}
             </p>
           </div>
@@ -98,22 +98,22 @@ export const UserMenu: React.FC<UserMenuProps> = ({
           <a
             href="#profile"
             onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-950 dark:text-gray-300 dark:hover:bg-gray-900 dark:hover:text-white"
+            className="flex items-center gap-3 px-4 py-2.5 text-sm text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-card-soft)] hover:text-[var(--text-primary)]"
           >
-            <User className="h-4 w-4 text-gray-400" />
+            <User className="h-4 w-4 text-[var(--text-muted)]" />
             <span>My Profile</span>
           </a>
 
           {/* <a
             href="#settings"
             onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-950 dark:text-gray-300 dark:hover:bg-gray-900 dark:hover:text-white"
+            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-blue-50 hover:text-blue-700 dark:text-gray-300 dark:hover:bg-blue-950/30 dark:hover:text-blue-300"
           >
             <Settings className="h-4 w-4 text-gray-400" />
             <span>Settings</span>
           </a> */}
 
-          <div className="my-1 border-t border-gray-100 dark:border-gray-800" />
+          <div className="my-1 border-t border-[var(--border-color)]" />
 
           <button
             type="button"
@@ -121,7 +121,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
               setIsOpen(false);
               if (onLogout) onLogout();
             }}
-            className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/25 cursor-pointer"
+            className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-[var(--danger-text)] transition-colors hover:bg-[var(--danger-bg)] cursor-pointer"
           >
             <LogOut className="h-4 w-4" />
             <span>Sign out</span>

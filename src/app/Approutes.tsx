@@ -10,6 +10,7 @@ import { User } from '../features/User/components/Users';
 import { TimesheetPending } from '../features/Timesheet/components/TimesheetPending';
 import { TimesheetDetails } from '../features/Timesheet/components/TimesheetDetails';
 import { ExceptionDetail } from '../features/Timesheet/components/ExceptionDetail';
+import { ReviewerTimecards } from '../features/Timesheet/components/ReviewerTimecards';
 import { GetAllEmployee } from '../features/Employee/components/GetAllEmployee';
 import { GetEmployee } from '../features/Employee/components/GetEmployee';
 import { Clients } from '../features/Client/components/Clients';
@@ -61,6 +62,7 @@ const AppRoutes: React.FC = () => {
           <Route index element={<Navigate to="timesheets" replace />} />
           <Route path="timesheets" element={<TimesheetPending />} />
           <Route path="timesheets/:timesheetId" element={<TimesheetDetails />} />
+          <Route path="timecards" element={<ReviewerTimecards />} />
           <Route path="timecards/:timecardId/exception" element={<ExceptionDetail />} />
           <Route path="timesheets-pending" element={<Navigate to="/reviewer/timesheets" replace />} />
           <Route path="emails" element={<MailInbox />} />

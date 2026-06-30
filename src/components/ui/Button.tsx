@@ -21,14 +21,14 @@ export const Button: React.FC<ButtonProps> = ({
   type = 'button',
   ...props
 }) => {
-  const baseClasses = 'inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-950 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer';
+  const baseClasses = 'inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 focus:ring-offset-[var(--bg-main)] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer';
 
   const variantClasses = {
-    primary: 'bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500 border border-transparent shadow-sm',
-    secondary: 'bg-gray-100 hover:bg-gray-200 text-gray-800 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700 focus:ring-gray-500 border border-transparent',
-    danger: 'bg-red-600 hover:bg-red-700 text-white focus:ring-red-500 border border-transparent shadow-sm',
-    outline: 'border border-gray-300 hover:bg-gray-50 text-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800 focus:ring-blue-500 bg-transparent',
-    ghost: 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100 focus:ring-blue-500 bg-transparent',
+    primary: 'border border-transparent bg-[var(--primary)] text-white shadow-sm shadow-blue-700/15 hover:bg-[var(--primary-hover)]',
+    secondary: 'border border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-secondary)] shadow-sm shadow-gray-950/5 hover:bg-[var(--bg-card-soft)] hover:text-[var(--text-primary)]',
+    danger: 'border border-red-600 bg-red-600 text-white shadow-sm shadow-red-700/15 hover:bg-red-700 focus:ring-red-500',
+    outline: 'border border-[var(--border-color)] bg-transparent text-[var(--text-secondary)] hover:border-[var(--primary)] hover:bg-[var(--primary-soft)] hover:text-[var(--text-primary)]',
+    ghost: 'border border-transparent bg-transparent text-[var(--text-muted)] hover:bg-[var(--bg-card-soft)] hover:text-[var(--text-primary)]',
   };
 
   const sizeClasses = {

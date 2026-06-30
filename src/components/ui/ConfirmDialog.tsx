@@ -67,21 +67,21 @@ export const ConfirmProvider: React.FC<{ children: React.ReactNode }> = ({ child
     switch (state.options.variant) {
       case 'danger':
         return {
-          iconBg: 'bg-red-50 dark:bg-red-950/35',
-          iconColor: 'text-red-650 dark:text-red-400',
+          iconBg: 'bg-[var(--danger-bg)] ring-red-200',
+          iconColor: 'text-[var(--danger-text)]',
           btnVariant: 'danger' as const,
         };
       case 'info':
         return {
-          iconBg: 'bg-blue-50 dark:bg-blue-950/35',
-          iconColor: 'text-blue-650 dark:text-blue-400',
+          iconBg: 'bg-[var(--primary-soft)] ring-blue-200',
+          iconColor: 'text-[var(--primary)]',
           btnVariant: 'primary' as const,
         };
       case 'warning':
       default:
         return {
-          iconBg: 'bg-amber-50 dark:bg-amber-950/35',
-          iconColor: 'text-amber-650 dark:text-amber-400',
+          iconBg: 'bg-[var(--warning-bg)] ring-amber-200',
+          iconColor: 'text-[var(--warning-text)]',
           btnVariant: 'primary' as const, // primary will act as confirm
         };
     }
@@ -111,7 +111,7 @@ export const ConfirmProvider: React.FC<{ children: React.ReactNode }> = ({ child
         footer={modalFooter}
       >
         <div className="flex items-start gap-4">
-          <div className={`p-3 rounded-full flex-shrink-0 ${iconBg} ${iconColor}`}>
+          <div className={`p-3 rounded-full flex-shrink-0 ring-1 ${iconBg} ${iconColor}`}>
             {state.options.variant === 'danger' && (
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -129,7 +129,7 @@ export const ConfirmProvider: React.FC<{ children: React.ReactNode }> = ({ child
             )}
           </div>
           <div className="flex-1">
-            <p className="text-sm text-gray-550 dark:text-gray-400 mt-1.5">
+            <p className="text-sm text-[var(--text-secondary)] mt-1.5">
               {state.options.message}
             </p>
           </div>

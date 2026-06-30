@@ -96,10 +96,10 @@ export const ExceptionDetail = () => {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-96 items-center justify-center rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950">
+      <div className="flex min-h-96 items-center justify-center rounded-lg border border-[var(--border-color)] bg-white">
         <div className="flex flex-col items-center gap-3">
           <Spinner />
-          <p className="text-sm text-gray-500 dark:text-gray-400">Loading exception details...</p>
+          <p className="text-sm text-[var(--text-muted)]">Loading exception details...</p>
         </div>
       </div>
     );
@@ -107,9 +107,9 @@ export const ExceptionDetail = () => {
 
   if (error || !timecard) {
     return (
-      <div className="rounded-lg border border-red-100 bg-red-50/70 p-8 text-center dark:border-red-950/40 dark:bg-red-950/15">
-        <h1 className="text-lg font-semibold text-red-800 dark:text-red-300">Exception unavailable</h1>
-        <p className="mt-2 text-sm text-red-700 dark:text-red-400">
+      <div className="rounded-lg border border-red-200 bg-[var(--danger-bg)] p-8 text-center">
+        <h1 className="text-lg font-semibold text-[var(--danger-text)]">Exception unavailable</h1>
+        <p className="mt-2 text-sm text-[var(--danger-text)]">
           {error?.message || 'The selected exception could not be found.'}
         </p>
         <Button className="mt-5" variant="outline" onClick={backToTimesheet}>
@@ -141,32 +141,32 @@ export const ExceptionDetail = () => {
         </Button>
       </div>
 
-      <section className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm shadow-gray-950/5 dark:border-gray-800 dark:bg-gray-950">
-        <div className="border-b border-gray-200 bg-red-50 px-6 py-6 dark:border-gray-800 dark:bg-red-950/20">
+      <section className="overflow-hidden rounded-lg border border-[var(--border-color)] bg-white shadow-sm shadow-gray-950/5">
+        <div className="border-b border-red-200 bg-[var(--danger-bg)] px-6 py-6">
           <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
             <div className="flex min-w-0 items-center gap-4">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-red-600 text-white shadow-sm shadow-red-600/25">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-red-600 text-white shadow-sm shadow-red-700/15">
                 <AlertTriangle className="h-6 w-6" />
               </div>
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">
+                  <h1 className="text-2xl font-semibold tracking-tight text-[var(--text-primary)]">
                     {timecard.employee_name || 'Unknown employee'}
                   </h1>
                   <Badge variant={timecard.status === 'clean' ? 'success' : 'danger'}>
                     {formatLabel(timecard.status)}
                   </Badge>
                 </div>
-                <p className="mt-1 font-mono text-sm text-gray-500 dark:text-gray-400">
+                <p className="mt-1 font-mono text-sm text-[var(--text-muted)]">
                   {timecard.timecard_id}
                 </p>
               </div>
             </div>
-            <div className="rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-950">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            <div className="rounded-lg border border-[var(--border-color)] bg-white px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                 Severity
               </p>
-              <p className="mt-1 text-sm font-semibold text-gray-950 dark:text-white">
+              <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">
                 {formatLabel(timecard.severity)}
               </p>
             </div>
@@ -174,29 +174,29 @@ export const ExceptionDetail = () => {
         </div>
 
         <div className="grid md:grid-cols-3">
-          <div className="border-b border-gray-200 p-6 dark:border-gray-800 md:border-b-0 md:border-r">
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Regular</p>
-            <p className="mt-2 text-2xl font-semibold text-gray-950 dark:text-white">{formatHours(timecard.reg_hours)}</p>
+          <div className="border-b border-[var(--border-color)] p-6 md:border-b-0 md:border-r">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Regular</p>
+            <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">{formatHours(timecard.reg_hours)}</p>
           </div>
-          <div className="border-b border-gray-200 p-6 dark:border-gray-800 md:border-b-0 md:border-r">
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">OT</p>
-            <p className="mt-2 text-2xl font-semibold text-gray-950 dark:text-white">{formatHours(timecard.ot_hours)}</p>
+          <div className="border-b border-[var(--border-color)] p-6 md:border-b-0 md:border-r">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">OT</p>
+            <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">{formatHours(timecard.ot_hours)}</p>
           </div>
           <div className="p-6">
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">DT</p>
-            <p className="mt-2 text-2xl font-semibold text-gray-950 dark:text-white">{formatHours(timecard.dt_hours)}</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">DT</p>
+            <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">{formatHours(timecard.dt_hours)}</p>
           </div>
         </div>
       </section>
 
-      <section className="rounded-lg border border-gray-200 bg-white shadow-sm shadow-gray-950/5 dark:border-gray-800 dark:bg-gray-950">
-        <div className="border-b border-gray-200 px-5 py-5 dark:border-gray-800">
-          <h2 className="text-lg font-semibold text-gray-950 dark:text-white">Exception details</h2>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+      <section className="rounded-lg border border-[var(--border-color)] bg-white shadow-sm shadow-gray-950/5">
+        <div className="border-b border-[var(--border-color)] px-5 py-5">
+          <h2 className="text-lg font-semibold text-[var(--text-primary)]">Exception details</h2>
+          <p className="mt-1 text-sm text-[var(--text-muted)]">
             Resolve all exception entries by correcting the timecard and adding a reviewer comment.
           </p>
         </div>
-        <div className="divide-y divide-gray-100 dark:divide-gray-800">
+        <div className="divide-y divide-[var(--border-color)]">
           {timecard.exceptions.map((exception) => (
             <div key={exception.exception_id} className="p-5">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -207,9 +207,9 @@ export const ExceptionDetail = () => {
                     </Badge>
                     <Badge variant="neutral">{formatLabel(exception.severity)}</Badge>
                   </div>
-                  <p className="mt-3 text-sm text-gray-700 dark:text-gray-300">{exception.reason}</p>
+                  <p className="mt-3 text-sm text-[var(--text-secondary)]">{exception.reason}</p>
                 </div>
-                {exception.resolved && <CheckCircle2 className="h-5 w-5 text-emerald-500" />}
+                {exception.resolved && <CheckCircle2 className="h-5 w-5 text-[var(--success-text)]" />}
               </div>
             </div>
           ))}
@@ -247,7 +247,7 @@ export const ExceptionDetail = () => {
             rows={4}
             fullWidth
           />
-          <div className="flex justify-end gap-3 border-t border-gray-100 pt-5 dark:border-gray-800">
+          <div className="flex justify-end gap-3 border-t border-[var(--border-color)] pt-5">
             <Button type="button" variant="outline" onClick={() => setIsEditorOpen(false)} disabled={isPending}>
               Cancel
             </Button>
