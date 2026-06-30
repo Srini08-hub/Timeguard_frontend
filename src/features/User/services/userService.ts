@@ -1,5 +1,5 @@
 import axiosInstance from '../../../lib/auth'
-import type { CreateUserRequest, UserInfo } from '../types/index'
+import type { CreateUserRequest, UpdateUserRequest, UserInfo } from '../types/index'
 import { USER_ENDPOINTS } from '../../../config/constant'
 
 
@@ -12,7 +12,7 @@ const userService = {
         const response = await axiosInstance.get(USER_ENDPOINTS.GET_USERS)
         return response.data
     },
-    updateUser: async (userId: string, userData: CreateUserRequest): Promise<UserInfo> => {
+    updateUser: async (userId: string, userData: UpdateUserRequest): Promise<UserInfo> => {
         const response = await axiosInstance.patch(USER_ENDPOINTS.UPDATE_USER(userId), userData)
         return response.data
     },

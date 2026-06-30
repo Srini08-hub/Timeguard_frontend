@@ -62,16 +62,16 @@ export const CreateEmployee = ({ onBack, onCreated }: CreateEmployeeProps) => {
         </Button>
       )}
 
-      <div className="rounded-lg border border-blue-100 bg-blue-50 p-4 dark:border-blue-900/50 dark:bg-blue-950/20">
+      <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card-soft)] p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600 text-white">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary)] text-white">
             <UserPlus className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="text-base font-semibold text-gray-950 dark:text-white">
+            <h2 className="text-base font-semibold text-[var(--text-primary)]">
               Add employee record
             </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-[var(--text-secondary)]">
               Create a workforce identity for assignments and timesheet operations.
             </p>
           </div>
@@ -110,7 +110,7 @@ export const CreateEmployee = ({ onBack, onCreated }: CreateEmployeeProps) => {
           fullWidth
         />
 
-        <div className="flex flex-col-reverse gap-3 border-t border-gray-100 pt-5 dark:border-gray-800 sm:flex-row sm:justify-end">
+        <div className="flex flex-col-reverse gap-3 border-t border-[var(--border-color)] pt-5 sm:flex-row sm:justify-end">
           {onBack && (
             <Button
               type="button"

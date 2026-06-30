@@ -10,7 +10,6 @@ import {
 
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
-import { Select } from '../../../components/ui/Select';
 import { Table, type TableColumn } from '../../../components/ui/Table';
 import {
   type MailFilter,
@@ -22,7 +21,7 @@ import type { EmailStatus, TimesheetEmailResponse } from '../types';
 
 const MAILS_PER_PAGE = 10;
 
-const mailFilterOptions = [
+const mailFilterOptions: { value: MailFilter; label: string }[] = [
   { value: 'all', label: 'All Mails' },
   { value: 'timesheet', label: 'Timesheet' },
   { value: 'non-timesheet', label: 'Non-Timesheet' },
@@ -145,17 +144,17 @@ export const MailInbox = () => {
       header: 'Mail',
       accessor: (email) => (
         <div className="flex min-w-72 items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-700 ring-1 ring-blue-100 dark:bg-blue-950/35 dark:text-blue-300 dark:ring-blue-900/50">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary-soft)] text-[var(--primary)] ring-1 ring-blue-100">
             <Mail className="h-4 w-4" />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="truncate font-semibold text-gray-950 dark:text-white">
+              <span className="truncate font-semibold text-[var(--text-primary)]">
                 {getSubject(email)}
               </span>
-              <ArrowUpRight className="h-3.5 w-3.5 text-gray-400" />
+              <ArrowUpRight className="h-3.5 w-3.5 text-[var(--text-muted)]" />
             </div>
-            <span className="mt-0.5 block truncate text-xs text-gray-500 dark:text-gray-400">
+            <span className="mt-0.5 block truncate text-xs text-[var(--text-muted)]">
               {email.sender_email}
             </span>
           </div>
@@ -184,7 +183,7 @@ export const MailInbox = () => {
       key: 'preview',
       header: 'Preview',
       accessor: (email) => (
-        <span className="block max-w-xl truncate text-sm text-gray-600 dark:text-gray-300">
+        <span className="block max-w-xl truncate text-sm text-[var(--text-secondary)]">
           {getPreview(email.body)}
         </span>
       ),
@@ -193,7 +192,7 @@ export const MailInbox = () => {
       key: 'id',
       header: 'Mail ID',
       accessor: (email) => (
-        <span className="font-mono text-xs text-gray-500 dark:text-gray-400">
+        <span className="font-mono text-xs text-[var(--text-muted)]">
           {email.email_id}
         </span>
       ),
@@ -202,17 +201,17 @@ export const MailInbox = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      <section className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm shadow-gray-950/5 dark:border-gray-800 dark:bg-gray-950">
-        <div className="flex flex-col gap-5 border-b border-gray-200 px-5 py-5 dark:border-gray-800 lg:flex-row lg:items-center lg:justify-between">
+      <section className="overflow-hidden rounded-lg border border-[var(--border-color)] bg-white shadow-sm shadow-gray-950/5">
+        <div className="flex flex-col gap-5 border-b border-[var(--border-color)] bg-[var(--bg-card-soft)] px-5 py-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm shadow-blue-600/25">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)] text-white shadow-sm shadow-blue-700/15">
               <Inbox className="h-5 w-5" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">
+              <h1 className="text-2xl font-semibold tracking-tight text-[var(--text-primary)]">
                 Mail
               </h1>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              <p className="mt-1 text-sm text-[var(--text-muted)]">
                 Review inbound mail in one workspace and open each record for live processing status.
               </p>
             </div>
@@ -229,42 +228,55 @@ export const MailInbox = () => {
           </Button>
         </div>
 
-        <div className="grid border-b border-gray-200 dark:border-gray-800 md:grid-cols-3">
-          <div className="border-b border-gray-200 px-5 py-4 dark:border-gray-800 md:border-b-0 md:border-r">
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+        <div className="grid gap-3 border-b border-[var(--border-color)] bg-white p-5 md:grid-cols-3">
+          <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card-soft)] px-5 py-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
               Visible mails
             </p>
-            <p className="mt-2 text-2xl font-semibold text-gray-950 dark:text-white">
+            <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">
               {visibleEmails.length}
             </p>
           </div>
-          <div className="border-b border-gray-200 px-5 py-4 dark:border-gray-800 md:border-b-0 md:border-r">
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+          <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card-soft)] px-5 py-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
               Mailbox
             </p>
-            <p className="mt-2 text-2xl font-semibold text-gray-950 dark:text-white">
+            <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">
               {filterLabels[selectedFilter]}
             </p>
           </div>
-          <div className="px-5 py-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+          <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card-soft)] px-5 py-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
               Current page
             </p>
-            <p className="mt-2 text-2xl font-semibold text-gray-950 dark:text-white">
+            <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">
               {safeCurrentPage} / {totalPages}
             </p>
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 px-5 py-4 xl:flex-row xl:items-end xl:justify-between">
-          <div className="w-full xl:max-w-xs">
-            <Select
-              label="Mailbox"
-              value={selectedFilter}
-              options={mailFilterOptions}
-              fullWidth
-              onChange={(event) => setSelectedFilter(event.target.value as MailFilter)}
-            />
+        <div className="flex flex-col gap-3 bg-white px-5 py-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Mailbox</p>
+          <div className="inline-flex w-full rounded-lg border border-[var(--border-color)] bg-[var(--bg-card-soft)] p-1 sm:w-auto">
+            {mailFilterOptions.map((option) => {
+              const isSelected = selectedFilter === option.value;
+
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setSelectedFilter(option.value)}
+                  className={
+                    'flex-1 rounded-md px-4 py-2 text-sm font-semibold transition-colors sm:flex-none ' +
+                    (isSelected
+                      ? 'bg-white text-[var(--primary)] shadow-sm ring-1 ring-[var(--border-color)]'
+                      : 'text-[var(--text-secondary)] hover:bg-white hover:text-[var(--text-primary)]')
+                  }
+                >
+                  {option.label}
+                </button>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -284,7 +296,7 @@ export const MailInbox = () => {
         }}
       />
 
-      <div className="flex items-start gap-3 rounded-lg border border-blue-100 bg-blue-50 p-4 text-sm text-blue-800 dark:border-blue-900/50 dark:bg-blue-950/20 dark:text-blue-300">
+      <div className="flex items-start gap-3 rounded-lg border border-blue-100 bg-[var(--primary-soft)] p-4 text-sm text-[var(--primary-hover)]">
         <FileText className="mt-0.5 h-4 w-4 shrink-0" />
         <p>
           Open a mail row to inspect live status, message details, and attachment processing records.
@@ -293,4 +305,3 @@ export const MailInbox = () => {
     </div>
   );
 };
-

@@ -77,10 +77,10 @@ export const ClientDetails = () => {
 
   if (isClientLoading) {
     return (
-      <div className="flex min-h-96 items-center justify-center rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950">
+      <div className="flex min-h-96 items-center justify-center rounded-lg border border-[var(--border-color)] bg-white">
         <div className="flex flex-col items-center gap-3">
           <Spinner />
-          <p className="text-sm text-gray-500 dark:text-gray-400">Loading client profile...</p>
+          <p className="text-sm text-[var(--text-muted)]">Loading client profile...</p>
         </div>
       </div>
     );
@@ -88,11 +88,11 @@ export const ClientDetails = () => {
 
   if (clientError || !client) {
     return (
-      <div className="rounded-lg border border-red-100 bg-red-50/70 p-8 text-center dark:border-red-950/40 dark:bg-red-950/15">
-        <h1 className="text-lg font-semibold text-red-800 dark:text-red-300">
+      <div className="rounded-lg border border-red-200 bg-[var(--danger-bg)] p-8 text-center">
+        <h1 className="text-lg font-semibold text-[var(--danger-text)]">
           Client profile unavailable
         </h1>
-        <p className="mt-2 text-sm text-red-700 dark:text-red-400">
+        <p className="mt-2 text-sm text-[var(--danger-text)]">
           {clientError?.message || 'The selected client could not be found.'}
         </p>
         <Button className="mt-5" variant="outline" onClick={() => navigate('/ops-admin/clients')}>
@@ -124,34 +124,34 @@ export const ClientDetails = () => {
         </Button> */}
       </div>
 
-      <section className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm shadow-gray-950/5 dark:border-gray-800 dark:bg-gray-950">
-        <div className="border-b border-gray-200 bg-gray-50 px-6 py-6 dark:border-gray-800 dark:bg-gray-900/60">
+      <section className="overflow-hidden rounded-lg border border-[var(--border-color)] bg-white shadow-sm shadow-gray-950/5">
+        <div className="border-b border-[var(--border-color)] bg-[var(--bg-card-soft)] px-6 py-6">
           <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
             <div className="flex min-w-0 items-center gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-xl font-semibold text-white shadow-sm shadow-blue-600/25">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-[var(--primary)] text-xl font-semibold text-white shadow-sm shadow-blue-700/15">
                 {getInitials(client.client_name) || <Building2 className="h-7 w-7" />}
               </div>
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="truncate text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">
+                  <h1 className="truncate text-2xl font-semibold tracking-tight text-[var(--text-primary)]">
                     {client.client_name}
                   </h1>
                   <Badge variant={client.is_active ? 'success' : 'neutral'}>
                     {client.is_active ? 'Active' : 'Inactive'}
                   </Badge>
                 </div>
-                <p className="mt-1 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                <p className="mt-1 flex items-center gap-2 text-sm text-[var(--text-muted)]">
                   <Mail className="h-4 w-4" />
                   {client.sender_email}
                 </p>
               </div>
             </div>
 
-            <div className="rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-950">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            <div className="rounded-lg border border-[var(--border-color)] bg-white px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                 Client ID
               </p>
-              <p className="mt-1 font-mono text-sm text-gray-950 dark:text-white">
+              <p className="mt-1 font-mono text-sm text-[var(--text-primary)]">
                 {client.client_id}
               </p>
             </div>
@@ -159,32 +159,32 @@ export const ClientDetails = () => {
         </div>
 
         <div className="grid md:grid-cols-3">
-          <div className="border-b border-gray-200 p-6 dark:border-gray-800 md:border-b-0 md:border-r">
+          <div className="border-b border-[var(--border-color)] p-6 md:border-b-0 md:border-r">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/35 dark:text-blue-300">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary-soft)] text-[var(--primary)]">
                 <Globe className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                   Sender domain
                 </p>
-                <p className="mt-1 text-sm font-semibold text-gray-950 dark:text-white">
+                <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">
                   {client.sender_domain}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="border-b border-gray-200 p-6 dark:border-gray-800 md:border-b-0 md:border-r">
+          <div className="border-b border-[var(--border-color)] p-6 md:border-b-0 md:border-r">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-300">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--success-bg)] text-[var(--success-text)]">
                 <ShieldCheck className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                   Client status
                 </p>
-                <p className="mt-1 text-sm font-semibold text-gray-950 dark:text-white">
+                <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">
                   {client.is_active ? 'Operational' : 'Inactive record'}
                 </p>
               </div>
@@ -193,14 +193,14 @@ export const ClientDetails = () => {
 
           <div className="p-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 text-gray-600 dark:bg-gray-900 dark:text-gray-300">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--bg-card-soft)] text-[var(--text-secondary)]">
                 <CalendarDays className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                   Created on
                 </p>
-                <p className="mt-1 text-sm font-semibold text-gray-950 dark:text-white">
+                <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">
                   {formatDate(client.created_at)}
                 </p>
               </div>
@@ -236,7 +236,7 @@ export const ClientDetails = () => {
             fullWidth
           />
 
-          <div className="flex justify-end gap-3 border-t border-gray-100 pt-5 dark:border-gray-800">
+          <div className="flex justify-end gap-3 border-t border-[var(--border-color)] pt-5">
             <Button
               type="button"
               variant="outline"

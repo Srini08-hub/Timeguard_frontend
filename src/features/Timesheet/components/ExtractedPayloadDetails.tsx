@@ -1,4 +1,4 @@
-﻿import { useMemo } from 'react';
+import { useMemo } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -165,7 +165,7 @@ const buildRowColumns = (rows: TimesheetPayloadRow[]): TableColumn<TimesheetPayl
     key,
     header: formatLabel(key),
     accessor: (row) => (
-      <span className="block max-w-56 truncate text-sm text-gray-700 dark:text-gray-300">
+      <span className="block max-w-56 truncate text-sm text-[var(--text-secondary)]">
         {stringifyValue(row[key])}
       </span>
     ),
@@ -202,10 +202,10 @@ export const ExtractedPayloadDetails = () => {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-96 items-center justify-center rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950">
+      <div className="flex min-h-96 items-center justify-center rounded-lg border border-[var(--border-color)] bg-white">
         <div className="flex flex-col items-center gap-3">
           <Spinner />
-          <p className="text-sm text-gray-500 dark:text-gray-400">Loading extracted payload...</p>
+          <p className="text-sm text-[var(--text-muted)]">Loading extracted payload...</p>
         </div>
       </div>
     );
@@ -213,11 +213,11 @@ export const ExtractedPayloadDetails = () => {
 
   if (!timesheet || !extract) {
     return (
-      <div className="rounded-lg border border-red-100 bg-red-50/70 p-8 text-center dark:border-red-950/40 dark:bg-red-950/15">
-        <h1 className="text-lg font-semibold text-red-800 dark:text-red-300">
+      <div className="rounded-lg border border-red-200 bg-[var(--danger-bg)] p-8 text-center">
+        <h1 className="text-lg font-semibold text-[var(--danger-text)]">
           Extracted payload unavailable
         </h1>
-        <p className="mt-2 text-sm text-red-700 dark:text-red-400">
+        <p className="mt-2 text-sm text-[var(--danger-text)]">
           The selected attachment extract could not be found.
         </p>
         <Button className="mt-5" variant="outline" onClick={() => navigate('/reviewer/timesheets')}>
@@ -241,33 +241,33 @@ export const ExtractedPayloadDetails = () => {
         </Button>
       </div>
 
-      <section className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm shadow-gray-950/5 dark:border-gray-800 dark:bg-gray-950">
-        <div className="border-b border-gray-200 bg-gray-50 px-6 py-6 dark:border-gray-800 dark:bg-gray-900/60">
+      <section className="overflow-hidden rounded-lg border border-[var(--border-color)] bg-white shadow-sm shadow-gray-950/5">
+        <div className="border-b border-[var(--border-color)] bg-[var(--bg-card-soft)] px-6 py-6">
           <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
             <div className="flex min-w-0 items-center gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm shadow-blue-600/25">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-[var(--primary)] text-white shadow-sm shadow-blue-700/15">
                 <FileSpreadsheet className="h-7 w-7" />
               </div>
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="truncate text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">
+                  <h1 className="truncate text-2xl font-semibold tracking-tight text-[var(--text-primary)]">
                     {extract.attachment_name || 'email_body'}
                   </h1>
                   <Badge variant={sheets.length > 0 ? 'success' : 'neutral'}>
                     {sheets.length > 0 ? 'Payload Available' : 'No Payload'}
                   </Badge>
                 </div>
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                <p className="mt-1 text-sm text-[var(--text-muted)]">
                   {timesheet.client_name || 'Needs client match'}
                 </p>
               </div>
             </div>
 
-            <div className="rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-950">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            <div className="rounded-lg border border-[var(--border-color)] bg-white px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                 Email ID
               </p>
-              <p className="mt-1 font-mono text-sm text-gray-950 dark:text-white">
+              <p className="mt-1 font-mono text-sm text-[var(--text-primary)]">
                 {timesheet.email_id}
               </p>
             </div>
@@ -275,48 +275,48 @@ export const ExtractedPayloadDetails = () => {
         </div>
 
         <div className="grid md:grid-cols-4">
-          <div className="border-b border-gray-200 p-6 dark:border-gray-800 md:border-b-0 md:border-r">
+          <div className="border-b border-[var(--border-color)] p-6 md:border-b-0 md:border-r">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/35 dark:text-blue-300">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary-soft)] text-[var(--primary)]">
                 <Inbox className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                   Source type
                 </p>
-                <p className="mt-1 text-sm font-semibold text-gray-950 dark:text-white">
+                <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">
                   {extract.source_type}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="border-b border-gray-200 p-6 dark:border-gray-800 md:border-b-0 md:border-r">
+          <div className="border-b border-[var(--border-color)] p-6 md:border-b-0 md:border-r">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-300">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--success-bg)] text-[var(--success-text)]">
                 <FileText className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                   Sheets
                 </p>
-                <p className="mt-1 text-sm font-semibold text-gray-950 dark:text-white">
+                <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">
                   {sheets.length}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="border-b border-gray-200 p-6 dark:border-gray-800 md:border-b-0 md:border-r">
+          <div className="border-b border-[var(--border-color)] p-6 md:border-b-0 md:border-r">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/30 dark:text-indigo-300">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary-soft)] text-[var(--primary)]">
                 <Rows3 className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                   Extracted rows
                 </p>
-                <p className="mt-1 text-sm font-semibold text-gray-950 dark:text-white">
+                <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">
                   {totalRows}
                 </p>
               </div>
@@ -325,14 +325,14 @@ export const ExtractedPayloadDetails = () => {
 
           <div className="p-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 text-gray-600 dark:bg-gray-900 dark:text-gray-300">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--bg-card-soft)] text-[var(--text-secondary)]">
                 <CheckCircle2 className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                   Global fields
                 </p>
-                <p className="mt-1 text-sm font-semibold text-gray-950 dark:text-white">
+                <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">
                   {totalGlobalFields}
                 </p>
               </div>
@@ -342,10 +342,10 @@ export const ExtractedPayloadDetails = () => {
       </section>
 
       {sheets.length === 0 ? (
-        <div className="rounded-lg border border-gray-200 bg-white p-8 text-center shadow-sm shadow-gray-950/5 dark:border-gray-800 dark:bg-gray-950">
-          <FileSpreadsheet className="mx-auto h-10 w-10 text-gray-400 dark:text-gray-600" />
-          <h2 className="mt-4 text-lg font-semibold text-gray-950 dark:text-white">No sheet data found</h2>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        <div className="rounded-lg border border-[var(--border-color)] bg-white p-8 text-center shadow-sm shadow-gray-950/5">
+          <FileSpreadsheet className="mx-auto h-10 w-10 text-[var(--text-muted)]" />
+          <h2 className="mt-4 text-lg font-semibold text-[var(--text-primary)]">No sheet data found</h2>
+          <p className="mt-1 text-sm text-[var(--text-muted)]">
             This extracted payload does not contain sheet rows or global fields.
           </p>
         </div>
@@ -355,26 +355,26 @@ export const ExtractedPayloadDetails = () => {
 
           return (
             <section key={sheet.id} className="space-y-4">
-              <div className="rounded-lg border border-gray-200 bg-white shadow-sm shadow-gray-950/5 dark:border-gray-800 dark:bg-gray-950">
-                <div className="flex flex-col gap-4 border-b border-gray-200 px-5 py-5 dark:border-gray-800 lg:flex-row lg:items-center lg:justify-between">
+              <div className="rounded-lg border border-[var(--border-color)] bg-white shadow-sm shadow-gray-950/5">
+                <div className="flex flex-col gap-4 border-b border-[var(--border-color)] px-5 py-5 lg:flex-row lg:items-center lg:justify-between">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-lg font-semibold text-gray-950 dark:text-white">
+                      <h2 className="text-lg font-semibold text-[var(--text-primary)]">
                         {sheet.title}
                       </h2>
                       <Badge variant="info">Sheet {index + 1}</Badge>
                     </div>
-                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    <p className="mt-1 text-sm text-[var(--text-muted)]">
                       Sheet-level globals, employee summary, and extracted time rows.
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2 text-sm">
-                    <span className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 font-medium text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300">
-                      <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                    <span className="inline-flex items-center gap-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card-soft)] px-3 py-2 font-medium text-[var(--text-secondary)]">
+                      <ShieldCheck className="h-4 w-4 text-[var(--success-text)]" />
                       {sheet.globalData.length} global fields
                     </span>
-                    <span className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 font-medium text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300">
-                      <Rows3 className="h-4 w-4 text-blue-500" />
+                    <span className="inline-flex items-center gap-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card-soft)] px-3 py-2 font-medium text-[var(--text-secondary)]">
+                      <Rows3 className="h-4 w-4 text-[var(--primary)]" />
                       {sheet.rows.length} rows
                     </span>
                   </div>
@@ -382,14 +382,14 @@ export const ExtractedPayloadDetails = () => {
 
                 <div className="grid gap-3 p-5 md:grid-cols-2 xl:grid-cols-3">
                   {sheet.globalData.length === 0 ? (
-                    <p className="text-sm text-gray-500 dark:text-gray-400">No global fields were detected for this sheet.</p>
+                    <p className="text-sm text-[var(--text-muted)]">No global fields were detected for this sheet.</p>
                   ) : (
                     sheet.globalData.map((item) => (
-                      <div key={sheet.id + item.label + item.value} className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-900/60">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      <div key={sheet.id + item.label + item.value} className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card-soft)] p-4">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                           {item.label}
                         </p>
-                        <p className="mt-2 break-words text-sm font-semibold text-gray-950 dark:text-white">
+                        <p className="mt-2 break-words text-sm font-semibold text-[var(--text-primary)]">
                           {item.value}
                         </p>
                       </div>
@@ -411,5 +411,3 @@ export const ExtractedPayloadDetails = () => {
     </div>
   );
 };
-
-

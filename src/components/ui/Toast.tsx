@@ -82,33 +82,33 @@ const ToastCard: React.FC<{ toast: ToastItem; onClose: () => void }> = ({ toast,
   }, [duration, onClose]);
 
   const iconMap = {
-    success: <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />,
-    warning: <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400" />,
-    error: <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />,
-    info: <Info className="h-5 w-5 text-blue-600 dark:text-blue-400" />,
+    success: <CheckCircle2 className="h-5 w-5 text-[var(--success-text)]" />,
+    warning: <AlertTriangle className="h-5 w-5 text-[var(--warning-text)]" />,
+    error: <XCircle className="h-5 w-5 text-[var(--danger-text)]" />,
+    info: <Info className="h-5 w-5 text-[var(--primary)]" />,
   };
 
   const bgStyles = {
-    success: 'bg-white border-green-100 dark:bg-gray-900 dark:border-green-950/45',
-    warning: 'bg-white border-amber-100 dark:bg-gray-900 dark:border-amber-950/45',
-    error: 'bg-white border-red-100 dark:bg-gray-900 dark:border-red-950/45',
-    info: 'bg-white border-blue-100 dark:bg-gray-900 dark:border-blue-950/45',
+    success: 'bg-[var(--success-bg)] border-[var(--success-border)]',
+    warning: 'bg-[var(--warning-bg)] border-orange-500/45',
+    error: 'bg-[var(--danger-bg)] border-red-500/45',
+    info: 'bg-[var(--bg-card)] border-[var(--primary)]',
   };
 
   return (
     <div
       role="alert"
-      className={`pointer-events-auto flex w-full max-w-sm rounded-xl border p-4 shadow-lg animate-in slide-in-from-right duration-300 dark:shadow-black/40 ${bgStyles[type]}`}
+      className={`pointer-events-auto flex w-full max-w-sm rounded-xl border p-4 shadow-lg shadow-gray-950/10 animate-in slide-in-from-right duration-300 ${bgStyles[type]}`}
     >
       <div className="flex items-start gap-3 w-full">
         <div className="shrink-0">{iconMap[type]}</div>
         <div className="flex-1 min-w-0">
           {title && (
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-0.5">
+            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-0.5">
               {title}
             </h3>
           )}
-          <p className="text-xs text-gray-550 dark:text-gray-400 leading-relaxed font-normal">
+          <p className="text-xs text-[var(--text-secondary)] leading-relaxed font-normal">
             {message}
           </p>
         </div>
@@ -116,7 +116,7 @@ const ToastCard: React.FC<{ toast: ToastItem; onClose: () => void }> = ({ toast,
           type="button"
           onClick={onClose}
           aria-label="Dismiss"
-          className="shrink-0 text-gray-400 hover:text-gray-500 rounded-lg p-0.5 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+          className="shrink-0 text-[var(--text-muted)] hover:text-[var(--text-primary)] rounded-lg p-0.5 hover:bg-[var(--bg-card-soft)] transition-colors cursor-pointer"
         >
           <X className="h-4 w-4" />
         </button>

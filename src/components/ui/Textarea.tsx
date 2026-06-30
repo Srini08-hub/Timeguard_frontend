@@ -34,8 +34,8 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
             htmlFor={textareaId}
             className={`text-sm font-medium leading-none ${
               disabled
-                ? 'text-gray-400 dark:text-gray-600'
-                : 'text-gray-750 dark:text-gray-250'
+                ? 'text-[var(--text-muted)] opacity-60'
+                : 'text-[var(--text-secondary)]'
             }`}
           >
             {label}
@@ -51,11 +51,11 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           aria-describedby={
             error ? errorId : helperText ? helperId : undefined
           }
-          className={`flex w-full rounded-md border bg-white px-3 py-2 text-sm text-gray-900 shadow-sm transition-colors focus-visible:outline-hidden focus-visible:ring-1 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-950 dark:text-gray-50 resize-y
+          className={`flex w-full rounded-md border bg-[var(--bg-card)] px-3 py-2 text-sm text-[var(--text-primary)] shadow-sm shadow-gray-950/5 transition-colors placeholder:text-[var(--text-muted)] focus-visible:outline-hidden focus-visible:ring-1 disabled:cursor-not-allowed disabled:opacity-50 resize-y
             ${
               error
                 ? 'border-red-500 focus-visible:ring-red-500'
-                : 'border-gray-300 dark:border-gray-705 focus-visible:ring-blue-500'
+                : 'border-[var(--border-color)] focus-visible:border-[var(--primary)] focus-visible:ring-[var(--primary)]'
             }
             ${className}
           `}
@@ -65,7 +65,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         {error ? (
           <p
             id={errorId}
-            className="text-xs text-red-550 dark:text-red-400 font-medium"
+            className="text-xs text-[var(--danger-text)] font-medium"
             role="alert"
           >
             {error}
@@ -73,7 +73,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         ) : helperText ? (
           <p
             id={helperId}
-            className="text-xs text-gray-500 dark:text-gray-455"
+            className="text-xs text-[var(--text-muted)]"
           >
             {helperText}
           </p>

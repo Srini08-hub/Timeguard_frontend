@@ -113,19 +113,19 @@ export const ClientRulesList = () => {
       header: 'Rule',
       accessor: (rule) => (
         <div className="flex min-w-64 items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-white dark:bg-white dark:text-gray-950">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)] text-white">
             <ReceiptText className="h-4 w-4" />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="truncate font-semibold text-gray-950 dark:text-white">
+              <span className="truncate font-semibold text-[var(--text-primary)]">
                 Department pay rule
               </span>
               <Badge variant={rule.is_active ? 'success' : 'neutral'}>
                 {rule.is_active ? 'Active' : 'Inactive'}
               </Badge>
             </div>
-            <span className="mt-0.5 block truncate font-mono text-xs text-gray-500 dark:text-gray-400">
+            <span className="mt-0.5 block truncate font-mono text-xs text-[var(--text-muted)]">
               {rule.rule_id}
             </span>
           </div>
@@ -137,10 +137,10 @@ export const ClientRulesList = () => {
       header: 'Thresholds',
       accessor: (rule) => (
         <div className="space-y-1 text-sm">
-          <p className="font-semibold text-gray-950 dark:text-white">
+          <p className="font-semibold text-[var(--text-primary)]">
             OT {formatHours(rule.weekly_ot_threshold)}
           </p>
-          <p className="text-gray-500 dark:text-gray-400">
+          <p className="text-[var(--text-muted)]">
             DT {formatHours(rule.weekly_dt_threshold)}
           </p>
         </div>
@@ -151,10 +151,10 @@ export const ClientRulesList = () => {
       header: 'Multipliers',
       accessor: (rule) => (
         <div className="space-y-1 text-sm">
-          <p className="font-semibold text-gray-950 dark:text-white">
+          <p className="font-semibold text-[var(--text-primary)]">
             OT {formatMultiplier(rule.ot_multiplier)}
           </p>
-          <p className="text-gray-500 dark:text-gray-400">
+          <p className="text-[var(--text-muted)]">
             DT {formatMultiplier(rule.dt_multiplier)}
           </p>
         </div>
@@ -166,9 +166,9 @@ export const ClientRulesList = () => {
       accessor: (rule) => (
         <div className="flex items-center gap-2 text-sm">
           {rule.break_auto_deduct ? (
-            <BadgeCheck className="h-4 w-4 text-emerald-500" />
+            <BadgeCheck className="h-4 w-4 text-[var(--success-text)]" />
           ) : (
-            <Clock3 className="h-4 w-4 text-gray-400" />
+            <Clock3 className="h-4 w-4 text-[var(--text-muted)]" />
           )}
           <span>
             {rule.break_auto_deduct
@@ -183,7 +183,7 @@ export const ClientRulesList = () => {
       header: 'Updated',
       accessor: (rule) => (
         <span className="inline-flex items-center gap-1.5 text-sm">
-          <CalendarDays className="h-4 w-4 text-gray-400" />
+          <CalendarDays className="h-4 w-4 text-[var(--text-muted)]" />
           {formatDate(rule.updated_at)}
         </span>
       ),
@@ -209,7 +209,7 @@ export const ClientRulesList = () => {
             variant="ghost"
             size="icon"
             aria-label="Delete client rule"
-            className="h-9 w-9 text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/25"
+            className="h-9 w-9 text-[var(--danger-text)] hover:bg-[var(--danger-bg)] hover:text-[var(--danger-text)]"
             disabled={deletingRuleId === rule.rule_id}
             onClick={() => handleDelete(rule)}
           >
@@ -222,10 +222,10 @@ export const ClientRulesList = () => {
 
   if (isDepartmentLoading) {
     return (
-      <div className="flex min-h-96 items-center justify-center rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950">
+      <div className="flex min-h-96 items-center justify-center rounded-lg border border-[var(--border-color)] bg-white">
         <div className="flex flex-col items-center gap-3">
           <Spinner />
-          <p className="text-sm text-gray-500 dark:text-gray-400">Loading rule workspace...</p>
+          <p className="text-sm text-[var(--text-muted)]">Loading rule workspace...</p>
         </div>
       </div>
     );
@@ -253,29 +253,29 @@ export const ClientRulesList = () => {
         </Button>
       </div>
 
-      <section className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm shadow-gray-950/5 dark:border-gray-800 dark:bg-gray-950">
-        <div className="border-b border-gray-200 bg-gray-50 px-6 py-6 dark:border-gray-800 dark:bg-gray-900/60">
+      <section className="overflow-hidden rounded-lg border border-[var(--border-color)] bg-white shadow-sm shadow-gray-950/5">
+        <div className="border-b border-[var(--border-color)] bg-[var(--bg-card-soft)] px-6 py-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-900 text-white dark:bg-white dark:text-gray-950">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--primary)] text-white">
                   <ReceiptText className="h-5 w-5" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">
+                  <h1 className="text-2xl font-semibold tracking-tight text-[var(--text-primary)]">
                     Client Rules
                   </h1>
-                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  <p className="mt-1 text-sm text-[var(--text-muted)]">
                     {department?.department_name || 'Department'} policy for {client?.client_name || 'client'}.
                   </p>
                 </div>
               </div>
             </div>
-            <div className="rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-950">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            <div className="rounded-lg border border-[var(--border-color)] bg-white px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                 Active rules
               </p>
-              <p className="mt-1 text-2xl font-semibold text-gray-950 dark:text-white">
+              <p className="mt-1 text-2xl font-semibold text-[var(--text-primary)]">
                 {rules.length}
               </p>
             </div>

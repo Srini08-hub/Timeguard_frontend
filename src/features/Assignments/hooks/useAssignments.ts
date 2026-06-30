@@ -20,7 +20,7 @@ export const useAssignmentsByDepartment = (departmentId: string) => {
 export const useCreateAssignment = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<AssignmentResponse, Error, AssignmentCreate[]>({
+  return useMutation<AssignmentResponse[], Error, AssignmentCreate[]>({
     mutationFn: assignmentService.createAssignment,
     onSuccess: (_, variables) => {
       // Invalidate queries for department and employee assignments

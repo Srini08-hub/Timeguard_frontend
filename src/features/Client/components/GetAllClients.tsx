@@ -164,17 +164,17 @@ export const GetAllClients = () => {
       header: 'Client',
       accessor: (client) => (
         <div className="flex min-w-64 items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-sm font-semibold text-blue-700 ring-1 ring-blue-100 dark:bg-blue-950/35 dark:text-blue-300 dark:ring-blue-900/50">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary-soft)] text-sm font-semibold text-[var(--primary)] ring-1 ring-blue-100">
             {getInitials(client.client_name) || <Building2 className="h-4 w-4" />}
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="truncate font-semibold text-gray-950 dark:text-white">
+              <span className="truncate font-semibold text-[var(--text-primary)]">
                 {client.client_name}
               </span>
-              <ArrowUpRight className="h-3.5 w-3.5 text-gray-400" />
+              <ArrowUpRight className="h-3.5 w-3.5 text-[var(--text-muted)]" />
             </div>
-            <span className="mt-0.5 flex items-center gap-1.5 truncate text-xs text-gray-500 dark:text-gray-400">
+            <span className="mt-0.5 flex items-center gap-1.5 truncate text-xs text-[var(--text-muted)]">
               <Mail className="h-3.5 w-3.5" />
               {client.sender_email}
             </span>
@@ -186,8 +186,8 @@ export const GetAllClients = () => {
       key: 'domain',
       header: 'Domain',
       accessor: (client) => (
-        <span className="inline-flex items-center gap-1.5 text-sm text-gray-700 dark:text-gray-300">
-          <Globe className="h-4 w-4 text-gray-400" />
+        <span className="inline-flex items-center gap-1.5 text-sm text-[var(--text-secondary)]">
+          <Globe className="h-4 w-4 text-[var(--text-muted)]" />
           {client.sender_domain}
         </span>
       ),
@@ -227,7 +227,7 @@ export const GetAllClients = () => {
             variant="ghost"
             size="icon"
             aria-label={'Delete ' + client.client_name}
-            className="h-9 w-9 text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950/25"
+            className="h-9 w-9 text-[var(--danger-text)] hover:bg-[var(--danger-bg)] hover:text-[var(--danger-text)]"
             disabled={isDeleting}
             onClick={() => handleDelete(client)}
           >
@@ -240,18 +240,18 @@ export const GetAllClients = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      <section className="rounded-lg border border-gray-200 bg-white shadow-sm shadow-gray-950/5 dark:border-gray-800 dark:bg-gray-950">
-        <div className="flex flex-col gap-5 border-b border-gray-200 px-5 py-5 dark:border-gray-800 lg:flex-row lg:items-center lg:justify-between">
+      <section className="rounded-lg border border-[var(--border-color)] bg-white shadow-sm shadow-gray-950/5">
+        <div className="flex flex-col gap-5 border-b border-[var(--border-color)] bg-[var(--bg-card-soft)] px-5 py-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white shadow-sm shadow-blue-600/25">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[var(--primary)] text-white shadow-sm shadow-blue-700/15">
                 <Building2 className="h-5 w-5" />
               </div>
               <div>
-                <h1 className="text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">
+                <h1 className="text-2xl font-semibold tracking-tight text-[var(--text-primary)]">
                   Clients
                 </h1>
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                <p className="mt-1 text-sm text-[var(--text-muted)]">
                   Manage client sender identities and open each client to review departments.
                 </p>
               </div>
@@ -279,28 +279,28 @@ export const GetAllClients = () => {
           </div>
         </div>
 
-        <div className="grid border-b border-gray-200 dark:border-gray-800 md:grid-cols-3">
-          <div className="border-b border-gray-200 px-5 py-4 dark:border-gray-800 md:border-b-0 md:border-r">
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+        <div className="grid gap-3 border-b border-[var(--border-color)] bg-white p-5 md:grid-cols-3">
+          <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card-soft)] px-5 py-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
               Total clients
             </p>
-            <p className="mt-2 text-2xl font-semibold text-gray-950 dark:text-white">
+            <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">
               {clients.length}
             </p>
           </div>
-          <div className="border-b border-gray-200 px-5 py-4 dark:border-gray-800 md:border-b-0 md:border-r">
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+          <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card-soft)] px-5 py-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
               Active clients
             </p>
-            <p className="mt-2 text-2xl font-semibold text-gray-950 dark:text-white">
+            <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">
               {activeClients}
             </p>
           </div>
-          <div className="px-5 py-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+          <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card-soft)] px-5 py-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
               Inactive clients
             </p>
-            <p className="mt-2 text-2xl font-semibold text-gray-950 dark:text-white">
+            <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">
               {inactiveClients}
             </p>
           </div>
@@ -319,8 +319,8 @@ export const GetAllClients = () => {
               fullWidth
             />
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-            <ShieldCheck className="h-4 w-4 text-emerald-500" />
+          <div className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
+            <ShieldCheck className="h-4 w-4 text-[var(--success-text)]" />
             <span>{filteredClients.length} client records visible</span>
           </div>
         </div>
@@ -397,7 +397,7 @@ export const GetAllClients = () => {
             fullWidth
           />
 
-          <div className="flex justify-end gap-3 border-t border-gray-100 pt-5 dark:border-gray-800">
+          <div className="flex justify-end gap-3 border-t border-[var(--border-color)] pt-5">
             <Button
               type="button"
               variant="outline"

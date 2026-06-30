@@ -6,6 +6,8 @@ import type { TimecardEntry, TimecardUpdatePayload } from '../types';
 export const timecardQueryKeys = {
   all: ['timecards'] as const,
   byTimesheet: (timesheetId: string) => ['timecards', 'timesheet', timesheetId] as const,
+  approved: ['timecards', 'approved'] as const,
+  rejected: ['timecards', 'rejected'] as const,
   detail: (timecardId: string) => ['timecards', timecardId] as const,
 };
 
@@ -17,6 +19,25 @@ export const useTimecardsByTimesheet = (timesheetId?: string) => {
   });
 };
 
+export const useApprovedTimecards = () => {
+  return useQuery<TimecardEntry[], Error>({
+    queryKey: timecardQueryKeys.approved,
+    queryFn: timecardService.getApproved,
+  });
+};
+
+export const useRejectedTimecards = () => {
+  return useQuery<TimecardEntry[], Error>({
+    queryKey: timecardQueryKeys.rejected,
+    queryFn: timecardService.getRejected,
+  });
+};
+
+export const useExportApprovedTimecards = () => {
+  return useMutation<Blob, Error, string>({
+    mutationFn: timecardService.exportApproved,
+  });
+};
 export const useTimecard = (timecardId?: string) => {
   return useQuery<TimecardEntry, Error>({
     queryKey: timecardId ? timecardQueryKeys.detail(timecardId) : ['timecards', 'detail'],

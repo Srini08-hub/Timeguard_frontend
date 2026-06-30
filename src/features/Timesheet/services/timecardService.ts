@@ -13,6 +13,23 @@ const timecardService = {
     return response.data;
   },
 
+  getApproved: async (): Promise<TimecardEntry[]> => {
+    const response = await axiosInstance.get(TIMECARD_ENDPOINTS.GET_APPROVED);
+    return response.data;
+  },
+
+  getRejected: async (): Promise<TimecardEntry[]> => {
+    const response = await axiosInstance.get(TIMECARD_ENDPOINTS.GET_REJECTED);
+    return response.data;
+  },
+
+  exportApproved: async (weekEnding: string): Promise<Blob> => {
+    const response = await axiosInstance.get(TIMECARD_ENDPOINTS.EXPORT_APPROVED(weekEnding), {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
+
   resolve: async (
     timecardId: string,
     payload: TimecardUpdatePayload,

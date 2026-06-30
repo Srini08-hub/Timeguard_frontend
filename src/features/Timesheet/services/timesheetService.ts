@@ -11,6 +11,10 @@ const timesheetService = {
     const response = await axiosInstance.get(TIMESHEET_ENDPOINTS.GET_PROCESSED_TIMESHEETS);
     return response.data;
   },
+  markProcessed: async (timesheetId: string): Promise<Timesheet> => {
+    const response = await axiosInstance.patch(TIMESHEET_ENDPOINTS.MARK_PROCESSED(timesheetId));
+    return response.data;
+  },
   getContentExtractsByEmailId: async (emailId: string): Promise<ContentExtract[]> => {
     const response = await axiosInstance.get(CONTENT_EXTRACT_ENDPOINTS.GET_CONTENT_EXTRACTS_BY_EMAIL_ID(emailId));
     return response.data;

@@ -3,7 +3,6 @@ import {
   ArrowLeft,
   CalendarDays,
   CheckCircle2,
-  Copy,
   Edit3,
   Mail,
   ShieldCheck,
@@ -13,7 +12,6 @@ import {
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
 import { Spinner } from '../../../components/ui/Spinner';
-import { useToast } from '../../../hooks/useToast';
 import { useEmployee } from '../hooks/useEmployees';
 
 const formatDate = (value: string) => {
@@ -36,26 +34,25 @@ const getInitials = (name: string) => {
 export const GetEmployee = () => {
   const { empId } = useParams<{ empId: string }>();
   const navigate = useNavigate();
-  const toast = useToast();
   const { data: employee, error, isLoading } = useEmployee(empId);
 
-  const copyEmployeeId = async () => {
-    if (!employee) return;
+  // const copyEmployeeId = async () => {
+  //   if (!employee) return;
 
-    try {
-      await navigator.clipboard.writeText(employee.empId);
-      toast.success('Employee ID copied.', 'Copied');
-    } catch {
-      toast.error('Unable to copy employee ID.', 'Copy failed');
-    }
-  };
+  //   try {
+  //     await navigator.clipboard.writeText(employee.empId);
+  //     toast.success('Employee ID copied.', 'Copied');
+  //   } catch {
+  //     toast.error('Unable to copy employee ID.', 'Copy failed');
+  //   }
+  // };
 
   if (isLoading) {
     return (
-      <div className="flex min-h-96 items-center justify-center rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950">
+      <div className="flex min-h-96 items-center justify-center rounded-lg border border-[var(--border-color)] bg-white">
         <div className="flex flex-col items-center gap-3">
           <Spinner />
-          <p className="text-sm text-gray-500 dark:text-gray-400">Loading employee profile...</p>
+          <p className="text-sm text-[var(--text-muted)]">Loading employee profile...</p>
         </div>
       </div>
     );
@@ -63,11 +60,11 @@ export const GetEmployee = () => {
 
   if (error || !employee) {
     return (
-      <div className="rounded-lg border border-red-100 bg-red-50/70 p-8 text-center dark:border-red-950/40 dark:bg-red-950/15">
-        <h1 className="text-lg font-semibold text-red-800 dark:text-red-300">
+      <div className="rounded-lg border border-red-200 bg-[var(--danger-bg)] p-8 text-center">
+        <h1 className="text-lg font-semibold text-[var(--danger-text)]">
           Employee profile unavailable
         </h1>
-        <p className="mt-2 text-sm text-red-700 dark:text-red-400">
+        <p className="mt-2 text-sm text-[var(--danger-text)]">
           {error?.message || 'The selected employee could not be found.'}
         </p>
         <Button className="mt-5" variant="outline" onClick={() => navigate('..')}>
@@ -92,14 +89,14 @@ export const GetEmployee = () => {
           Employees
         </Button>
         <div className="flex flex-col gap-2 sm:flex-row">
-          <Button
+          {/* <Button
             type="button"
             variant="outline"
             icon={<Copy className="h-4 w-4" />}
             onClick={copyEmployeeId}
           >
             Copy ID
-          </Button>
+          </Button> */}
           <Button
             type="button"
             variant="primary"
@@ -111,34 +108,34 @@ export const GetEmployee = () => {
         </div>
       </div>
 
-      <section className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm shadow-gray-950/5 dark:border-gray-800 dark:bg-gray-950">
-        <div className="border-b border-gray-200 bg-gray-50 px-6 py-6 dark:border-gray-800 dark:bg-gray-900/60">
+      <section className="overflow-hidden rounded-lg border border-[var(--border-color)] bg-white shadow-sm shadow-gray-950/5">
+        <div className="border-b border-[var(--border-color)] bg-[var(--bg-card-soft)] px-6 py-6">
           <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
             <div className="flex min-w-0 items-center gap-4">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-xl font-semibold text-white shadow-sm shadow-blue-600/25">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-[var(--primary)] text-xl font-semibold text-white shadow-sm shadow-blue-700/15">
                 {initials || <UserRound className="h-7 w-7" />}
               </div>
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="truncate text-2xl font-semibold tracking-tight text-gray-950 dark:text-white">
+                  <h1 className="truncate text-2xl font-semibold tracking-tight text-[var(--text-primary)]">
                     {employee.name}
                   </h1>
                   <Badge variant={employee.isActive ? 'success' : 'neutral'}>
                     {employee.isActive ? 'Active' : 'Inactive'}
                   </Badge>
                 </div>
-                <p className="mt-1 flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                <p className="mt-1 flex items-center gap-2 text-sm text-[var(--text-muted)]">
                   <Mail className="h-4 w-4" />
                   {employee.email}
                 </p>
               </div>
             </div>
 
-            <div className="rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-950">
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            <div className="rounded-lg border border-[var(--border-color)] bg-white px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                 Employee ID
               </p>
-              <p className="mt-1 font-mono text-sm text-gray-950 dark:text-white">
+              <p className="mt-1 font-mono text-sm text-[var(--text-primary)]">
                 {employee.empId}
               </p>
             </div>
@@ -146,32 +143,32 @@ export const GetEmployee = () => {
         </div>
 
         <div className="grid md:grid-cols-3">
-          <div className="border-b border-gray-200 p-6 dark:border-gray-800 md:border-b-0 md:border-r">
+          <div className="border-b border-[var(--border-color)] p-6 md:border-b-0 md:border-r">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-300">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--success-bg)] text-[var(--success-text)]">
                 <CheckCircle2 className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                   Record status
                 </p>
-                <p className="mt-1 text-sm font-semibold text-gray-950 dark:text-white">
+                <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">
                   {employee.isAssigned ?'Already assigned' : 'Not assigned'}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="border-b border-gray-200 p-6 dark:border-gray-800 md:border-b-0 md:border-r">
+          <div className="border-b border-[var(--border-color)] p-6 md:border-b-0 md:border-r">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/35 dark:text-blue-300">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--primary-soft)] text-[var(--primary)]">
                 <CalendarDays className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                   Created on
                 </p>
-                <p className="mt-1 text-sm font-semibold text-gray-950 dark:text-white">
+                <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">
                   {formatDate(employee.createdAt)}
                 </p>
               </div>
@@ -180,14 +177,14 @@ export const GetEmployee = () => {
 
           <div className="p-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 text-gray-600 dark:bg-gray-900 dark:text-gray-300">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--bg-card-soft)] text-[var(--text-secondary)]">
                 <ShieldCheck className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                   Governance
                 </p>
-                <p className="mt-1 text-sm font-semibold text-gray-950 dark:text-white">
+                <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">
                   Employee master record
                 </p>
               </div>
@@ -197,34 +194,34 @@ export const GetEmployee = () => {
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm shadow-gray-950/5 dark:border-gray-800 dark:bg-gray-950">
-          <h2 className="text-base font-semibold text-gray-950 dark:text-white">
+        <div className="rounded-lg border border-[var(--border-color)] bg-white p-6 shadow-sm shadow-gray-950/5">
+          <h2 className="text-base font-semibold text-[var(--text-primary)]">
             Employee details
           </h2>
           <dl className="mt-5 grid gap-4 sm:grid-cols-2">
             <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Name</dt>
-              <dd className="mt-1 text-sm font-medium text-gray-950 dark:text-white">{employee.name}</dd>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Name</dt>
+              <dd className="mt-1 text-sm font-medium text-[var(--text-primary)]">{employee.name}</dd>
             </div>
             <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Email</dt>
-              <dd className="mt-1 text-sm font-medium text-gray-950 dark:text-white">{employee.email}</dd>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Email</dt>
+              <dd className="mt-1 text-sm font-medium text-[var(--text-primary)]">{employee.email}</dd>
             </div>
             <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Employee ID</dt>
-              <dd className="mt-1 font-mono text-sm font-medium text-gray-950 dark:text-white">{employee.empId}</dd>
+              <dt className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Employee ID</dt>
+              <dd className="mt-1 font-mono text-sm font-medium text-[var(--text-primary)]">{employee.empId}</dd>
             </div>
             <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Status</dt>
-              <dd className="mt-1 text-sm font-medium text-gray-950 dark:text-white">
+              <dt className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Status</dt>
+              <dd className="mt-1 text-sm font-medium text-[var(--text-primary)]">
                 {employee.isActive ? 'Active' : 'Inactive'}
               </dd>
             </div>
           </dl>
         </div>
 
-        {/* <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm shadow-gray-950/5 dark:border-gray-800 dark:bg-gray-950">
-          <h2 className="text-base font-semibold text-gray-950 dark:text-white">
+        {/* <div className="rounded-lg border border-[var(--border-color)] bg-white p-6 shadow-sm shadow-gray-950/5">
+          <h2 className="text-base font-semibold text-[var(--text-primary)]">
             Next actions
           </h2>
           <div className="mt-5 space-y-3">

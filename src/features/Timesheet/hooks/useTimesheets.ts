@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import timesheetService from '../services/timesheetService';
 import type { ContentExtract, Timesheet } from '../types';
@@ -20,6 +20,18 @@ export const useProcessedTimesheets = () => {
   return useQuery<Timesheet[], Error>({
     queryKey: timesheetQueryKeys.processed,
     queryFn: timesheetService.getProcessedTimesheets,
+  });
+};
+
+export const useMarkTimesheetProcessed = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<Timesheet, Error, string>({
+    mutationFn: timesheetService.markProcessed,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: timesheetQueryKeys.underReview });
+      queryClient.invalidateQueries({ queryKey: timesheetQueryKeys.processed });
+    },
   });
 };
 

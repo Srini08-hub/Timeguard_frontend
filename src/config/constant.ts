@@ -31,6 +31,7 @@ export const CONTENT_EXTRACT_ENDPOINTS = {
 export const TIMESHEET_ENDPOINTS = {
   GET_UNDER_REVIEW_TIMESHEETS: '/timesheet/under_review',
   GET_PROCESSED_TIMESHEETS: '/timesheet/processed',
+  MARK_PROCESSED: (timesheetId: string) => '/timesheet/' + timesheetId + '/processed',
 } as const
 
 export const EMPLOYEE_ENDPOINTS = {
@@ -76,6 +77,9 @@ export const CLIENT_RULE_ENDPOINTS = {
 
 export const TIMECARD_ENDPOINTS = {
   GET_BY_TIMESHEET: (timesheetId: string) => `/timecards/timesheet/${timesheetId}`,
+  GET_APPROVED: '/timecards/approved',
+  GET_REJECTED: '/timecards/rejected',
+  EXPORT_APPROVED: (weekEnding: string) => `/timecards/approved/export?week_ending=${weekEnding}`,
   GET_DETAIL: (timecardId: string) => `/timecards/${timecardId}`,
   RESOLVE: (timecardId: string) => `/timecards/${timecardId}/resolve`,
   APPROVE: (timecardId: string) => `/timecards/${timecardId}/approve`,
