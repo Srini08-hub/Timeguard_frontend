@@ -327,11 +327,7 @@ const employeeRecordColumns: TableColumn<TimesheetRecord>[] = [
     header: 'Hours',
     accessor: (record) => stringifyValue(record.hours),
   },
-  {
-    key: 'Total_hours',
-    header: 'Total Hours',
-    accessor: (record) => stringifyValue(record.total_hours),
-  },
+
   {
     key: 'overtime_hours',
     header: 'Overtime',
@@ -712,6 +708,7 @@ export const TimesheetDetails = () => {
             employeeRecords.map((employee, employeeIndex) => {
               const records = employee.timesheet_records ?? [];
               const sources = employee.source ?? [];
+              const total_hours=employee.total_hours??'0';
 
               return (
                 <section
@@ -730,6 +727,7 @@ export const TimesheetDetails = () => {
                           </h3>
                           <div className="mt-2 flex flex-wrap items-center gap-2">
                             <Badge variant="neutral">{employee.department || 'No department'}</Badge>
+                            <Badge variant="neutral">total hours: {total_hours || '0'} hours</Badge>
                             <Badge variant="info">{records.length} records</Badge>
                           </div>
                         </div>

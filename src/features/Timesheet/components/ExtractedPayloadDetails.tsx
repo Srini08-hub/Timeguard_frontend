@@ -144,7 +144,6 @@ const buildRowColumns = (rows: TimesheetPayloadRow[]): TableColumn<TimesheetPayl
     'department',
     'week_ending',
     'week_ending_date',
-    'total_hours',
     'date',
     'in_time',
     'out_time',
