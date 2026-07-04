@@ -8,8 +8,9 @@ import OpsAdmin from '../features/Dashboard/pages/OpsAdmin';
 import Reviewer from '../features/Dashboard/pages/Reviewer';
 import { User } from '../features/User/components/Users';
 import { TimesheetPending } from '../features/Timesheet/components/TimesheetPending';
-import { TimesheetDetails } from '../features/Timesheet/components/TimesheetDetails';
-import { ExceptionDetail } from '../features/Timesheet/components/ExceptionDetail';
+// import { TimesheetDetails } from '../features/Timesheet/components/TimesheetDetails';
+import { EmployeeTimesheetReview } from '../features/Timesheet/components/EmployeeTimesheetReview';
+// import { ExceptionDetail } from '../features/Timesheet/components/ExceptionDetail';
 import { ReviewerTimecards } from '../features/Timesheet/components/ReviewerTimecards';
 import { GetAllEmployee } from '../features/Employee/components/GetAllEmployee';
 import { GetEmployee } from '../features/Employee/components/GetEmployee';
@@ -20,6 +21,7 @@ import { DepartmentDetails } from '../features/Department/components/DepartmentD
 import { ClientRuleFormPage } from '../features/ClientRules/components/ClientRuleFormPage';
 import { ClientRulesList } from '../features/ClientRules/components/ClientRulesList';
 import { MailInbox } from '../features/Emails/components/MailInbox';
+import { PollingControl } from '../features/Emails/components/PollingControl';
 import { MailDetails } from '../features/Emails/components/MailDetails';
 
 const AppRoutes: React.FC = () => {
@@ -52,6 +54,7 @@ const AppRoutes: React.FC = () => {
           <Route path="employees/:empId/assign" element={<EmployeeAssignmentClients />} />
           <Route path="employees/:empId/assign/:clientId/departments" element={<EmployeeAssignmentDepartments />} />
           <Route path="clients" element={<Clients />} />
+          <Route path="polling" element={<PollingControl />} />
           <Route path="clients/:clientId" element={<ClientDetails />} />
           <Route path="clients/:clientId/departments/:departmentId" element={<DepartmentDetails />} />
           <Route path="clients/:clientId/departments/:departmentId/rules" element={<ClientRulesList />} />
@@ -64,9 +67,10 @@ const AppRoutes: React.FC = () => {
         <Route path="/reviewer" element={<Reviewer />}>
           <Route index element={<Navigate to="timesheets" replace />} />
           <Route path="timesheets" element={<TimesheetPending />} />
-          <Route path="timesheets/:timesheetId" element={<TimesheetDetails />} />
+          <Route path="timesheets/employees/:timecardId" element={<EmployeeTimesheetReview />} />
+          {/* <Route path="timesheets/:timesheetId" element={<TimesheetDetails />} /> */}
           <Route path="timecards" element={<ReviewerTimecards />} />
-          <Route path="timecards/:timecardId/exception" element={<ExceptionDetail />} />
+          {/* <Route path="timecards/:timecardId/exception" element={<ExceptionDetail />} /> */}
           <Route path="timesheets-pending" element={<Navigate to="/reviewer/timesheets" replace />} />
           <Route path="emails" element={<MailInbox />} />
           <Route path="emails/:emailId" element={<MailDetails />} />
@@ -81,3 +85,6 @@ const AppRoutes: React.FC = () => {
 };
 
 export default AppRoutes;
+
+
+

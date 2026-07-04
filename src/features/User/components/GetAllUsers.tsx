@@ -192,15 +192,7 @@ export const GetAllUsers = ({ onCreate }: GetAllUsersProps) => {
         </Badge>
       ),
     },
-    {
-      key: 'id',
-      header: 'User ID',
-      accessor: (user) => (
-        <span className="font-mono text-xs text-[var(--text-secondary)]">
-          {user.user_id}
-        </span>
-      ),
-    },
+   
     {
       key: 'actions',
       header: <span className="sr-only">Actions</span>,

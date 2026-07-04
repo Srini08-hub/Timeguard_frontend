@@ -90,5 +90,7 @@ export const TIMECARD_ENDPOINTS = {
   RESOLVE: (timecardId: string) => `/timecards/${timecardId}/resolve`,
   APPROVE: (timecardId: string) => `/timecards/${timecardId}/approve`,
   BULK_APPROVE: '/timecards/bulk/approve',
+  BULK_REJECT: '/timecards/bulk/reject',
   REJECT: (timecardId: string) => `/timecards/${timecardId}/reject`,
 } as const
+

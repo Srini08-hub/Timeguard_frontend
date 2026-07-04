@@ -65,6 +65,21 @@ export const useBulkApproveTimecards = () => {
       queryClient.invalidateQueries({ queryKey: timecardQueryKeys.all });
       timecards.forEach((timecard) => {
         queryClient.invalidateQueries({ queryKey: timecardQueryKeys.byTimesheet(timecard.timesheet_id) });
+        queryClient.invalidateQueries({ queryKey: timecardQueryKeys.detail(timecard.timecard_id) });
+      });
+    },
+  });
+};
+
+export const useBulkRejectTimecards = () => {
+  const queryClient = useQueryClient();
+  return useMutation<TimecardEntry[], Error, string[]>({
+    mutationFn: timecardService.bulkReject,
+    onSuccess: (timecards) => {
+      queryClient.invalidateQueries({ queryKey: timecardQueryKeys.all });
+      timecards.forEach((timecard) => {
+        queryClient.invalidateQueries({ queryKey: timecardQueryKeys.byTimesheet(timecard.timesheet_id) });
+        queryClient.invalidateQueries({ queryKey: timecardQueryKeys.detail(timecard.timecard_id) });
       });
     },
   });
@@ -97,3 +112,4 @@ export const useResolveTimecard = () => {
     },
   });
 };
+

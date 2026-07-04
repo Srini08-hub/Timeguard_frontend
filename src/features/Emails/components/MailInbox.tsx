@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type KeyboardEvent, type MouseEvent } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowUpRight,
@@ -13,19 +13,15 @@ import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { Select } from '../../../components/ui/Select';
 import { Table, type TableColumn } from '../../../components/ui/Table';
-import { useProcessedTimesheets, useUnderReviewTimesheets } from '../../Timesheet/hooks/useTimesheets';
-import type { Timesheet } from '../../Timesheet/types';
 import {
   type MailFilter,
   useAllMails,
   useNonTimesheetMails,
   useTimesheetMails,
 } from '../hooks/useEmails';
-import pollingService, { type PollingStatusResponse } from '../services/pollingService';
 import type { EmailStatus, TimesheetEmailResponse } from '../types';
 
 const MAILS_PER_PAGE = 10;
-const DEFAULT_POLL_INTERVAL_SECONDS = 30;
 type MailStatusFilter = 'all' | 'processed' | 'failed';
 
 const mailFilterOptions: { value: MailFilter; label: string }[] = [
@@ -122,98 +118,13 @@ export const MailInbox = () => {
   const [receivedFrom, setReceivedFrom] = useState('');
   const [receivedTo, setReceivedTo] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [pollIntervalSeconds, setPollIntervalSeconds] = useState(String(DEFAULT_POLL_INTERVAL_SECONDS));
-  const [pollingStatus, setPollingStatus] = useState<PollingStatusResponse>({
-    running: false,
-    interval_seconds: null,
-  });
-  const [pollingMessage, setPollingMessage] = useState<string | null>(null);
-  const [pollingError, setPollingError] = useState<string | null>(null);
-  const [pollingAction, setPollingAction] = useState<'start' | 'stop' | null>(null);
 
   const navigate = useNavigate();
 
   const allMailsQuery = useAllMails(selectedFilter === 'all');
   const timesheetQuery = useTimesheetMails(selectedFilter === 'timesheet');
   const nonTimesheetQuery = useNonTimesheetMails(selectedFilter === 'non-timesheet');
-  const underReviewTimesheetsQuery = useUnderReviewTimesheets();
-  const processedTimesheetsQuery = useProcessedTimesheets();
 
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadPollingStatus = async () => {
-      try {
-        const status = await pollingService.getPollingStatus();
-
-        if (!isMounted) {
-          return;
-        }
-
-        setPollingStatus(status);
-        if (status.interval_seconds !== null) {
-          setPollIntervalSeconds(String(status.interval_seconds));
-        }
-      } catch (error) {
-        if (!isMounted) {
-          return;
-        }
-
-        setPollingError(error instanceof Error ? error.message : 'Failed to load polling status');
-      }
-    };
-
-    void loadPollingStatus();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  const updatePollingStatus = (status: PollingStatusResponse, message: string) => {
-    setPollingStatus(status);
-    setPollingMessage(message);
-    setPollingError(null);
-  };
-
-  const handleStartPolling = async () => {
-    const intervalSeconds = Number.parseInt(pollIntervalSeconds.trim(), 10);
-
-    if (!Number.isInteger(intervalSeconds) || intervalSeconds < 1) {
-      setPollingError('Enter a polling interval of at least 1 second.');
-      setPollingMessage(null);
-      return;
-    }
-
-    setPollingAction('start');
-    setPollingError(null);
-
-    try {
-      const status = await pollingService.startPolling(intervalSeconds);
-      updatePollingStatus(status, `Polling started every ${intervalSeconds} seconds.`);
-    } catch (error) {
-      setPollingError(error instanceof Error ? error.message : 'Failed to start polling');
-      setPollingMessage(null);
-    } finally {
-      setPollingAction(null);
-    }
-  };
-
-  const handleStopPolling = async () => {
-    setPollingAction('stop');
-    setPollingError(null);
-
-    try {
-      const status = await pollingService.stopPolling();
-      updatePollingStatus(status, 'Polling stopped.');
-    } catch (error) {
-      setPollingError(error instanceof Error ? error.message : 'Failed to stop polling');
-      setPollingMessage(null);
-    } finally {
-      setPollingAction(null);
-    }
-  };
 
   const visibleEmails = useMemo(() => {
     const sourceEmails = selectedFilter === 'timesheet'
@@ -233,21 +144,6 @@ export const MailInbox = () => {
     return sortByNewestReceived(dateFilteredEmails);
   }, [allMailsQuery.data, nonTimesheetQuery.data, receivedFrom, receivedTo, selectedFilter, selectedStatus, timesheetQuery.data]);
 
-  const timesheetByEmailId = useMemo(() => {
-    const byEmailId = new Map<string, Timesheet>();
-
-    (underReviewTimesheetsQuery.data ?? []).forEach((timesheet) => {
-      byEmailId.set(timesheet.email_id, timesheet);
-    });
-
-    (processedTimesheetsQuery.data ?? []).forEach((timesheet) => {
-      if (!byEmailId.has(timesheet.email_id)) {
-        byEmailId.set(timesheet.email_id, timesheet);
-      }
-    });
-
-    return byEmailId;
-  }, [processedTimesheetsQuery.data, underReviewTimesheetsQuery.data]);
 
   const activeError = selectedFilter === 'timesheet'
     ? timesheetQuery.error
@@ -315,23 +211,6 @@ export const MailInbox = () => {
     setCurrentPage(1);
   };
 
-  const openTimesheetDetails = (
-    email: TimesheetEmailResponse,
-    event: MouseEvent<HTMLButtonElement>,
-  ) => {
-    event.stopPropagation();
-
-    const timesheet = timesheetByEmailId.get(email.email_id);
-    if (!timesheet) return;
-
-    navigate('/reviewer/timesheets/' + timesheet.timesheet_id, {
-      state: { timesheet },
-    });
-  };
-
-  const stopActionKeydown = (event: KeyboardEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
-  };
 
   const columns: TableColumn<TimesheetEmailResponse>[] = [
     {
@@ -392,34 +271,6 @@ export const MailInbox = () => {
         </span>
       ),
     },
-
-    {
-      key: 'timesheet',
-      header: 'Timesheet',
-      className: 'text-center',
-      accessor: (email) => {
-        if (email.status !== 'processed') {
-          return <span className="text-xs text-[var(--text-muted)]">-</span>;
-        }
-
-        const timesheet = timesheetByEmailId.get(email.email_id);
-
-        return (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="mx-auto h-9 w-9"
-            icon={<FileText className="h-4 w-4" />}
-            disabled={!timesheet}
-            aria-label="Open timesheet details"
-            title={timesheet ? 'Open timesheet details' : 'Timesheet details unavailable'}
-            onClick={(event) => openTimesheetDetails(email, event)}
-            onKeyDown={stopActionKeydown}
-          />
-        );
-      },
-    },
   ];
 
   return (
@@ -449,56 +300,6 @@ export const MailInbox = () => {
           >
             Refresh
           </Button>
-        </div>
-
-        <div className="border-b border-[var(--border-color)] bg-white px-5 py-4">
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-            <Input
-              type="number"
-              min={1}
-              step={1}
-              label="Polling interval (seconds)"
-              value={pollIntervalSeconds}
-              onChange={(event) => setPollIntervalSeconds(event.target.value)}
-              className="lg:max-w-sm"
-              fullWidth
-            />
-
-            <div className="flex flex-wrap gap-2 lg:justify-end">
-              <Button
-                type="button"
-                onClick={handleStartPolling}
-                isLoading={pollingAction === 'start'}
-                disabled={pollingAction !== null}
-              >
-                Start Polling
-              </Button>
-              <Button
-                type="button"
-                variant="danger"
-                onClick={handleStopPolling}
-                isLoading={pollingAction === 'stop'}
-                disabled={!pollingStatus.running || pollingAction !== null}
-              >
-                Stop Polling
-              </Button>
-            </div>
-          </div>
-
-          <p className="mt-3 text-xs text-[var(--text-muted)]">
-            Start Gmail polling on demand and control the interval here.
-          </p>
-
-          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-[var(--text-muted)]">
-            <Badge variant={pollingStatus.running ? 'success' : 'neutral'}>
-              {pollingStatus.running ? 'Polling active' : 'Polling stopped'}
-            </Badge>
-            {pollingStatus.interval_seconds !== null && (
-              <span>Interval: {pollingStatus.interval_seconds} seconds</span>
-            )}
-            {pollingMessage && <span>{pollingMessage}</span>}
-            {pollingError && <span className="text-red-600">{pollingError}</span>}
-          </div>
         </div>
 
         <div className="grid gap-3 border-b border-[var(--border-color)] bg-white p-5 md:grid-cols-3">
@@ -602,3 +403,7 @@ export const MailInbox = () => {
     </div>
   );
 };
+
+
+
+

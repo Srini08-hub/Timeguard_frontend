@@ -78,7 +78,7 @@ export interface ContentExtract {
   attachment_name: string;
 }
 
-export type TimecardStatus = 'pending' | 'clean' | 'exception' | 'approved' | 'rejected';
+export type TimecardStatus = 'pending' | 'no_exception' | 'exception' | 'approved' | 'rejected';
 export type ExceptionSeverity = 'none' | 'low' | 'medium' | 'high';
 
 export interface TimecardException {
@@ -125,3 +125,4 @@ export interface TimecardUpdatePayload {
   dt_hours?: number | null;
   review_comment?: string | null;
 }
+

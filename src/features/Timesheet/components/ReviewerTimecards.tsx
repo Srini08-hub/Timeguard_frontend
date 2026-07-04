@@ -29,6 +29,21 @@ const formatDate = (value?: string | null) => {
 
 const normalizeDate = (value?: string | null) => value?.slice(0, 10) ?? '';
 
+const resolveToWeekEndingSunday = (value: string) => {
+  if (!value) return '';
+  const [year, month, day] = value.split('-').map(Number);
+  if (!year || !month || !day) return value;
+
+  const selectedDate = new Date(year, month - 1, day);
+  const daysUntilSunday = (7 - selectedDate.getDay()) % 7;
+  selectedDate.setDate(selectedDate.getDate() + daysUntilSunday);
+
+  const resolvedYear = selectedDate.getFullYear();
+  const resolvedMonth = String(selectedDate.getMonth() + 1).padStart(2, '0');
+  const resolvedDay = String(selectedDate.getDate()).padStart(2, '0');
+  return `${resolvedYear}-${resolvedMonth}-${resolvedDay}`;
+};
+
 const formatNumber = (value?: number | string | null) => {
   const numericValue = Number(value ?? 0);
   if (!Number.isFinite(numericValue)) return '0.00';
@@ -92,12 +107,12 @@ export const ReviewerTimecards = () => {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `approved-timecards-${weekEndingSearch}.xlsx`;
+        link.download = `approved-payroll-${weekEndingSearch}.xlsx`;
         document.body.appendChild(link);
         link.click();
         link.remove();
         window.URL.revokeObjectURL(url);
-        toast.success('Approved timecards export downloaded.', 'Export ready');
+        toast.success('Approved payroll export downloaded.', 'Export ready');
       },
       onError: (error) => {
         toast.error(error.message, 'Export failed');
@@ -207,12 +222,12 @@ export const ReviewerTimecards = () => {
       <div className="flex flex-col gap-4 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] p-5 shadow-sm shadow-gray-950/5 lg:flex-row lg:items-end lg:justify-between">
         <div className="grid gap-4 sm:grid-cols-2">
           <Select
-            label="Timecard Status"
+            label="Payroll Status"
             value={view}
             onChange={(event) => setView(event.target.value as TimecardView)}
             options={[
-              { value: 'approved', label: 'Approved Timecards' },
-              { value: 'rejected', label: 'Rejected Timecards' },
+              { value: 'approved', label: 'Approved Payroll' },
+              { value: 'rejected', label: 'Rejected Payroll' },
             ]}
             fullWidth
           />
@@ -222,7 +237,7 @@ export const ReviewerTimecards = () => {
               label="Search Week Ending"
               type="date"
               value={weekEndingSearch}
-              onChange={(event) => setWeekEndingSearch(event.target.value)}
+              onChange={(event) => setWeekEndingSearch(resolveToWeekEndingSunday(event.target.value))}
               fullWidth
             />
           )}
@@ -246,9 +261,9 @@ export const ReviewerTimecards = () => {
         <FileSpreadsheet className="h-4 w-4 text-[var(--primary)]" />
         {view === 'approved'
           ? weekEndingSearch
-            ? `${displayedApprovedTimecards.length} approved timecard(s) for ${formatDate(weekEndingSearch)}`
-            : `${displayedApprovedTimecards.length} approved timecard(s)`
-          : `${rejectedTimecards.length} rejected timecard(s)`}
+            ? `${displayedApprovedTimecards.length} approved payroll item(s) for ${formatDate(weekEndingSearch)}`
+            : `${displayedApprovedTimecards.length} approved payroll item(s)`
+          : `${rejectedTimecards.length} rejected payroll item(s)`}
       </div>
 
       <Table
@@ -258,10 +273,10 @@ export const ReviewerTimecards = () => {
         error={error}
         emptyMessage={
           view === 'approved' && weekEndingSearch
-            ? 'No timecards found for this week ending.'
+            ? 'No payroll items found for this week ending.'
             : view === 'approved'
-              ? 'No approved timecards are available.'
-              : 'No rejected timecards are available.'
+              ? 'No approved payroll items are available.'
+              : 'No rejected payroll items are available.'
         }
         rowKey={(timecard) => timecard.timecard_id}
         pagination={
@@ -277,3 +292,4 @@ export const ReviewerTimecards = () => {
     </section>
   );
 };
+
