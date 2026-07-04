@@ -50,6 +50,13 @@ const timecardService = {
     return response.data;
   },
 
+  bulkReject: async (timecardIds: string[]): Promise<TimecardEntry[]> => {
+    const response = await axiosInstance.patch(TIMECARD_ENDPOINTS.BULK_REJECT, {
+      timecard_ids: timecardIds,
+    });
+    return response.data;
+  },
+
   reject: async (timecardId: string): Promise<TimecardEntry> => {
     const response = await axiosInstance.patch(TIMECARD_ENDPOINTS.REJECT(timecardId));
     return response.data;
@@ -57,3 +64,4 @@ const timecardService = {
 };
 
 export default timecardService;
+

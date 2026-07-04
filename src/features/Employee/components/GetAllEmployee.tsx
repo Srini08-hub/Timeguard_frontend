@@ -207,15 +207,7 @@ export const GetAllEmployee = () => {
         </Badge>
       ),
     },
-    {
-      key: 'employee-id',
-      header: 'Employee ID',
-      accessor: (employee) => (
-        <span className="font-mono text-xs text-[var(--text-secondary)]">
-          {employee.empId}
-        </span>
-      ),
-    },
+    
     {
       key: 'created',
       header: 'Created',

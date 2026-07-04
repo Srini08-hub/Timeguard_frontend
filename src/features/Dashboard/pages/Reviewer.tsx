@@ -5,8 +5,8 @@ import { useAuth, useLogout } from '../../auth/hooks';
 import { Database, Mail, ClipboardList } from 'lucide-react';
 
 const reviewerItems = [
-  { label: 'Timesheets', href: 'timesheets', icon: Database },
-  { label: 'Timecards', href: 'timecards', icon: ClipboardList },
+  { label: 'Timecards', href: 'timesheets', icon: Database },
+  { label: 'Payroll', href: 'timecards', icon: ClipboardList },
   { label: 'Mail', href: 'emails', icon: Mail },
 ];
 
@@ -23,9 +23,9 @@ const Reviewer: React.FC = () => {
   const activePageTitle = location.pathname.includes('/emails')
     ? 'Mail'
     : location.pathname.includes('/timecards') && !location.pathname.includes('/exception')
-      ? 'Timecards'
+      ? 'Payroll'
       : location.pathname.includes('/timesheets')
-        ? 'Timesheets'
+        ? 'timecards'
         : reviewerItems.find((item) => item.href === (location.pathname.split('/').pop() ?? ''))?.label ?? 'Reviewer';
 
   return (
@@ -47,3 +47,4 @@ const Reviewer: React.FC = () => {
 };
 
 export default Reviewer;
+
