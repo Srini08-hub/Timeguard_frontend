@@ -40,6 +40,7 @@ export interface SourceInfo {
 export interface EmployeeRecord {
   employee_name: string;
   department?: string | null;
+  total_hours?: string | null;
   source?: SourceInfo[];
   timesheet_records?: TimesheetRecord[];
   [key: string]: unknown;

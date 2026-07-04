@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
   CheckCircle2,
+  ExternalLink,
   FileSpreadsheet,
   FileText,
   Inbox,
@@ -14,6 +15,8 @@ import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
 import { Spinner } from '../../../components/ui/Spinner';
 import { Table, type TableColumn } from '../../../components/ui/Table';
+import { useAttachmentInfo } from '../../Emails/hooks/useAttachmentInfo';
+import type { AttachmentInfo } from '../../Emails/types';
 import {
   useProcessedTimesheets,
   useTimesheetContentExtracts,
@@ -46,6 +49,14 @@ interface SheetView {
   employeesMeta: TimesheetPayloadRow[];
 }
 
+interface EmployeeSourceView {
+  key: string;
+  employeeName: string;
+  fileName: string;
+  sourceType: string;
+  attachmentUrl?: string;
+}
+
 const stringifyValue = (value: unknown) => {
   if (value === null || value === undefined || value === '') return 'Not available';
   if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
@@ -60,6 +71,100 @@ const formatLabel = (key: string) => {
 
 const isRecord = (value: unknown): value is Record<string, unknown> => {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+};
+
+const getTextValue = (value: unknown) => {
+  if (value === null || value === undefined || value === '') return '';
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    return String(value).trim();
+  }
+  return '';
+};
+
+const getFirstTextField = (record: Record<string, unknown>, keys: string[]) => {
+  for (const key of keys) {
+    const value = getTextValue(record[key]);
+    if (value) return value;
+  }
+
+  return '';
+};
+
+const normalizeAttachmentName = (value: string) => {
+  const fileName = value.trim().split(/[\\/]/).pop() || value.trim();
+  return fileName.toLowerCase();
+};
+
+const buildAttachmentUrlByName = (attachments: AttachmentInfo[]) => {
+  const byName = new Map<string, string>();
+
+  attachments.forEach((attachment) => {
+    if (!attachment.filename || !attachment.attachment_url) return;
+    byName.set(normalizeAttachmentName(attachment.filename), attachment.attachment_url);
+  });
+
+  return byName;
+};
+
+const getAttachmentUrlForFile = (fileName: string, attachmentUrlByName: Map<string, string>) => {
+  return attachmentUrlByName.get(normalizeAttachmentName(fileName));
+};
+
+const openAttachmentInNewTab = (attachmentUrl: string) => {
+  window.open(attachmentUrl, '_blank', 'noopener,noreferrer');
+};
+
+const getSourceFromRecord = (
+  source: Record<string, unknown>,
+  employeeName: string,
+  sourceIndex: number,
+  attachmentUrlByName: Map<string, string>,
+): EmployeeSourceView | null => {
+  const fileName = getFirstTextField(source, ['file_name', 'filename', 'attachment_name', 'name']);
+  if (!fileName) return null;
+
+  const sourceType = getFirstTextField(source, ['content_type', 'source_type', 'document_type', 'type']);
+
+  return {
+    key: employeeName + '-' + fileName + '-' + sourceIndex,
+    employeeName,
+    fileName,
+    sourceType: sourceType || 'Not available',
+    attachmentUrl: getAttachmentUrlForFile(fileName, attachmentUrlByName),
+  };
+};
+
+const buildEmployeeSources = (
+  employeesMeta: TimesheetPayloadRow[],
+  attachmentUrlByName: Map<string, string>,
+): EmployeeSourceView[] => {
+  return employeesMeta.flatMap((employee, employeeIndex) => {
+    const employeeName = getFirstTextField(employee, ['employee_name', 'employee', 'name']) || 'Employee ' + (employeeIndex + 1);
+    const sourceValue = employee.source ?? employee.sources;
+
+    if (Array.isArray(sourceValue)) {
+      return sourceValue
+        .map((source, sourceIndex) => (
+          isRecord(source)
+            ? getSourceFromRecord(source, employeeName, sourceIndex, attachmentUrlByName)
+            : null
+        ))
+        .filter((source): source is EmployeeSourceView => Boolean(source));
+    }
+
+    const fileName = getFirstTextField(employee, ['file_name', 'filename', 'attachment_name']);
+    if (!fileName) return [];
+
+    const sourceType = getFirstTextField(employee, ['content_type', 'source_type', 'document_type']);
+
+    return [{
+      key: employeeName + '-' + fileName + '-' + employeeIndex,
+      employeeName,
+      fileName,
+      sourceType: sourceType || 'Not available',
+      attachmentUrl: getAttachmentUrlForFile(fileName, attachmentUrlByName),
+    }];
+  });
 };
 
 const getRowsFromBlocks = (sheet: TimesheetSheetPayload): TimesheetPayloadRow[] => {
@@ -190,11 +295,16 @@ export const ExtractedPayloadDetails = () => {
 
   const timesheet = stateTimesheet || lookupTimesheets.find((item) => item.timesheet_id === timesheetId);
   const contentExtractsQuery = useTimesheetContentExtracts(timesheet?.email_id);
+  const attachmentInfoQuery = useAttachmentInfo(timesheet?.email_id);
   const stateExtract = routeState?.extract;
   const extract = stateExtract || contentExtractsQuery.data?.[Number.isNaN(parsedExtractIndex) ? 0 : parsedExtractIndex];
   const sheets = normalizePayloadToSheets(extract?.extracted_payload, extract);
   const totalRows = sheets.reduce((count, sheet) => count + sheet.rows.length, 0);
   const totalGlobalFields = sheets.reduce((count, sheet) => count + sheet.globalData.length, 0);
+  const attachmentUrlByName = useMemo(
+    () => buildAttachmentUrlByName(attachmentInfoQuery.data ?? []),
+    [attachmentInfoQuery.data],
+  );
 
   const isLoading = (!timesheet && (underReviewQuery.isLoading || processedQuery.isLoading)) ||
     (Boolean(timesheet) && !stateExtract && contentExtractsQuery.isLoading);
@@ -351,6 +461,7 @@ export const ExtractedPayloadDetails = () => {
       ) : (
         sheets.map((sheet, index) => {
           const rowColumns = buildRowColumns(sheet.rows);
+          const employeeSources = buildEmployeeSources(sheet.employeesMeta, attachmentUrlByName);
 
           return (
             <section key={sheet.id} className="space-y-4">
@@ -396,8 +507,51 @@ export const ExtractedPayloadDetails = () => {
                   )}
                 </div>
               </div>
+              {employeeSources.length > 0 && (
+                <div className="rounded-lg border border-[var(--border-color)] bg-white shadow-sm shadow-gray-950/5">
+                  <div className="border-b border-[var(--border-color)] px-5 py-4">
+                    <h3 className="text-base font-semibold text-[var(--text-primary)]">Employee sources</h3>
+                  </div>
+                  <div className="grid gap-3 p-5 md:grid-cols-2 xl:grid-cols-3">
+                    {employeeSources.map((source) => (
+                      <div
+                        key={source.key}
+                        className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card-soft)] p-4"
+                      >
+                        <p className="truncate text-sm font-semibold text-[var(--text-primary)]">
+                          {source.employeeName}
+                        </p>
+                        <div className="mt-3 flex flex-wrap items-center gap-2">
+                          {source.attachmentUrl ? (
+                            <a
+                              href={source.attachmentUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              onClick={(event) => {
+                                event.preventDefault();
+                                openAttachmentInNewTab(source.attachmentUrl);
+                              }}
+                              className="inline-flex min-w-0 items-center gap-2 rounded-lg border border-[var(--border-color)] bg-white px-3 py-2 text-sm font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)]"
+                              aria-label={'Open attachment ' + source.fileName}
+                            >
+                              <FileText className="h-4 w-4 shrink-0 text-[var(--primary)]" />
+                              <span className="truncate">{source.fileName}</span>
+                              <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+                            </a>
+                          ) : (
+                            <span className="inline-flex min-w-0 items-center gap-2 rounded-lg border border-[var(--border-color)] bg-white px-3 py-2 text-sm font-medium text-[var(--text-secondary)]">
+                              <FileText className="h-4 w-4 shrink-0 text-[var(--text-muted)]" />
+                              <span className="truncate">{source.fileName}</span>
+                            </span>
+                          )}
+                          <Badge variant="neutral">{source.sourceType}</Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-              
               <Table
                 data={sheet.rows}
                 columns={rowColumns}

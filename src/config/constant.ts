@@ -24,6 +24,12 @@ export const EMAIL_ENDPOINTS = {
   GET_ATTACHMENT_INFO: (emailId: string) => `/emails/${emailId}/attachments`,
 } as const
 
+export const POLLING_ENDPOINTS = {
+  GET_STATUS: '/polling/status',
+  START: '/polling/start',
+  STOP: '/polling/stop',
+} as const
+
 export const CONTENT_EXTRACT_ENDPOINTS = {
   GET_CONTENT_EXTRACTS_BY_EMAIL_ID: (emailId: string) => `/content-extracts/email/${emailId}`,
 } as const

@@ -4,7 +4,6 @@ import {
   Edit3,
   Mail,
   Plus,
-  RefreshCw,
   Search,
   ShieldCheck,
   Trash2,
@@ -28,6 +27,13 @@ interface GetAllUsersProps {
 }
 
 const USERS_PER_PAGE = 10;
+type UserRoleFilter = 'all' | UserRole;
+
+const roleFilterOptions: { value: UserRoleFilter; label: string }[] = [
+  { value: 'all', label: 'All roles' },
+  { value: 'OpsAdmin', label: 'OpsAdmin' },
+  { value: 'reviewer', label: 'Reviewer' },
+];
 
 const getInitials = (name: string) => {
   return name
@@ -46,6 +52,7 @@ const getRoleBadgeVariant = (role: string) => {
 
 export const GetAllUsers = ({ onCreate }: GetAllUsersProps) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedRoleFilter, setSelectedRoleFilter] = useState<UserRoleFilter>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
   const [userToUpdate, setUserToUpdate] = useState<UserInfo | null>(null);
@@ -60,8 +67,6 @@ export const GetAllUsers = ({ onCreate }: GetAllUsersProps) => {
     data: users = [],
     error,
     isLoading,
-    isRefetching,
-    refetch,
   } = useUsers();
   const { mutate: updateUser, isPending: isUpdating } = useUpdateUser();
   const { mutate: deleteUser } = useDeleteUser();
@@ -70,13 +75,14 @@ export const GetAllUsers = ({ onCreate }: GetAllUsersProps) => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
     return users.filter((user) => {
       if (user.role !== 'OpsAdmin' && user.role !== 'reviewer') return false;
+      if (selectedRoleFilter !== 'all' && user.role !== selectedRoleFilter) return false;
       if (!normalizedSearch) return true;
       return [user.name, user.email, user.role, user.user_id]
         .join(' ')
         .toLowerCase()
         .includes(normalizedSearch);
     });
-  }, [users, searchTerm]);
+  }, [users, searchTerm, selectedRoleFilter]);
 
   const opsAdminCount = users.filter((user) => user.role === 'OpsAdmin').length;
   const reviewerCount = users.filter((user) => user.role === 'reviewer').length;
@@ -286,17 +292,30 @@ export const GetAllUsers = ({ onCreate }: GetAllUsersProps) => {
         </div>
 
         <div className="flex flex-col gap-3 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="w-full lg:max-w-md">
-            <Input
-              value={searchTerm}
-              onChange={(event) => {
-                setSearchTerm(event.target.value);
-                setCurrentPage(1);
-              }}
-              placeholder="Search by name, email, role, or ID"
-              icon={<Search className="h-4 w-4" />}
-              fullWidth
-            />
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center lg:max-w-2xl">
+            <div className="w-full sm:flex-1">
+              <Input
+                value={searchTerm}
+                onChange={(event) => {
+                  setSearchTerm(event.target.value);
+                  setCurrentPage(1);
+                }}
+                placeholder="Search by name, email, role, or ID"
+                icon={<Search className="h-4 w-4" />}
+                fullWidth
+              />
+            </div>
+            <div className="w-full sm:w-48">
+              <Select
+                value={selectedRoleFilter}
+                options={roleFilterOptions}
+                onChange={(event) => {
+                  setSelectedRoleFilter(event.target.value as UserRoleFilter);
+                  setCurrentPage(1);
+                }}
+                fullWidth
+              />
+            </div>
           </div>
           <p className="text-sm font-medium text-[var(--text-muted)]">
             {filteredUsers.length} user records visible

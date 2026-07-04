@@ -9,6 +9,7 @@ import {
   ChevronDown,
   Clock3,
   Database,
+  ExternalLink,
   FileText,
   ReceiptText,
   Rows3,
@@ -21,6 +22,8 @@ import { Spinner } from '../../../components/ui/Spinner';
 import { useToast } from '../../../hooks/useToast';
 import { Table, type TableColumn } from '../../../components/ui/Table';
 import { TimecardTable } from './TimecardTable';
+import { useAttachmentInfo } from '../../Emails/hooks/useAttachmentInfo';
+import type { AttachmentInfo } from '../../Emails/types';
 import { useClients } from '../../Client/hooks/useClients';
 import { useClientRulesByDepartment } from '../../ClientRules/hooks/useClientRules';
 import type { ClientRuleNumber, ClientRuleResponse } from '../../ClientRules/types';
@@ -89,6 +92,30 @@ const stringifyValue = (value: unknown) => {
 
 const isObjectRecord = (value: unknown): value is Record<string, unknown> => {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+};
+
+const normalizeAttachmentName = (value: string) => {
+  const fileName = value.trim().split(/[\\/]/).pop() || value.trim();
+  return fileName.toLowerCase();
+};
+
+const buildAttachmentUrlByName = (attachments: AttachmentInfo[]) => {
+  const byName = new Map<string, string>();
+
+  attachments.forEach((attachment) => {
+    if (!attachment.filename || !attachment.attachment_url) return;
+    byName.set(normalizeAttachmentName(attachment.filename), attachment.attachment_url);
+  });
+
+  return byName;
+};
+
+const getAttachmentUrlForFile = (fileName: string, attachmentUrlByName: Map<string, string>) => {
+  return attachmentUrlByName.get(normalizeAttachmentName(fileName));
+};
+
+const openAttachmentInNewTab = (attachmentUrl: string) => {
+  window.open(attachmentUrl, '_blank', 'noopener,noreferrer');
 };
 
 const isMergeResponse = (payload: TimesheetExtractedPayload | null | undefined): payload is MergeResponse => {
@@ -373,6 +400,11 @@ export const TimesheetDetails = () => {
     );
   }, [clientsQuery.data, timesheet?.client_name]);
   const departmentsQuery = useDepartmentsByClient(matchedClient?.client_id ?? '');
+  const attachmentInfoQuery = useAttachmentInfo(timesheet?.email_id);
+  const attachmentUrlByName = useMemo(
+    () => buildAttachmentUrlByName(attachmentInfoQuery.data ?? []),
+    [attachmentInfoQuery.data],
+  );
   const isLoading = shouldLookup && (underReviewQuery.isLoading || processedQuery.isLoading);
   const lookupError = underReviewQuery.error || processedQuery.error;
 
@@ -737,16 +769,41 @@ export const TimesheetDetails = () => {
                         {sources.length === 0 ? (
                           <Badge variant="neutral">No source files</Badge>
                         ) : (
-                          sources.map((source, sourceIndex) => (
-                            <span
-                              key={source.file_name + '-' + sourceIndex}
-                              className="inline-flex max-w-xs items-center gap-2 rounded-full border border-[var(--border-color)] bg-white px-3 py-1 text-xs font-medium text-[var(--text-secondary)]"
-                            >
-                              <FileText className="h-3.5 w-3.5 shrink-0 text-[var(--primary)]" />
-                              <span className="truncate">{source.file_name}</span>
-                              <span className="shrink-0 text-[var(--text-muted)]">{source.content_type}</span>
-                            </span>
-                          ))
+                          sources.map((source, sourceIndex) => {
+                            const attachmentUrl = getAttachmentUrlForFile(source.file_name, attachmentUrlByName);
+                            const sourceContent = (
+                              <>
+                                <FileText className="h-3.5 w-3.5 shrink-0 text-[var(--primary)]" />
+                                <span className="truncate">{source.file_name}</span>
+                                <span className="shrink-0 text-[var(--text-muted)]">{source.content_type}</span>
+                                {attachmentUrl && <ExternalLink className="h-3.5 w-3.5 shrink-0 text-[var(--primary)]" />}
+                              </>
+                            );
+
+                            return attachmentUrl ? (
+                              <a
+                                key={source.file_name + '-' + sourceIndex}
+                                href={attachmentUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                onClick={(event) => {
+                                  event.preventDefault();
+                                  openAttachmentInNewTab(attachmentUrl);
+                                }}
+                                className="inline-flex max-w-xs items-center gap-2 rounded-full border border-[var(--border-color)] bg-white px-3 py-1 text-xs font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)]"
+                                aria-label={'Open attachment ' + source.file_name}
+                              >
+                                {sourceContent}
+                              </a>
+                            ) : (
+                              <span
+                                key={source.file_name + '-' + sourceIndex}
+                                className="inline-flex max-w-xs items-center gap-2 rounded-full border border-[var(--border-color)] bg-white px-3 py-1 text-xs font-medium text-[var(--text-secondary)]"
+                              >
+                                {sourceContent}
+                              </span>
+                            );
+                          })
                         )}
                       </div>
                     </div>
