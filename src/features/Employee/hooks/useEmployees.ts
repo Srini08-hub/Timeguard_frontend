@@ -6,6 +6,7 @@ import type {
   EmployeeResponse,
   EmployeeUpdate,
 } from '../types';
+import { assignmentQueryKeys } from '../../Assignments/hooks/useAssignments';
 
 export const employeeQueryKeys = {
   all: ['employees'] as const,
@@ -92,6 +93,11 @@ export const useDeleteEmployee = () => {
       invalidateEmployeeLists(queryClient);
       queryClient.invalidateQueries({
         queryKey: employeeQueryKeys.detail(employee.empId),
+      });
+      // Invalidate assignments queries when employee is deleted
+      queryClient.invalidateQueries({ queryKey: assignmentQueryKeys.all });
+      queryClient.invalidateQueries({
+        queryKey: assignmentQueryKeys.byEmployee(employee.empId),
       });
     },
   });

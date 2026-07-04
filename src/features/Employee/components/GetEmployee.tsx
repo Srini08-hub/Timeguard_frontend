@@ -6,12 +6,14 @@ import {
   Edit3,
   Mail,
   ShieldCheck,
+  UserPlus,
   UserRound,
 } from 'lucide-react';
 
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
 import { Spinner } from '../../../components/ui/Spinner';
+import departmentService from '../../Department/services/departmentService';
 import { useEmployee } from '../hooks/useEmployees';
 
 const formatDate = (value: string) => {
@@ -76,6 +78,21 @@ export const GetEmployee = () => {
 
   const initials = getInitials(employee.name);
 
+  const handleAssignEmployee = async () => {
+    if (employee.isAssigned) {
+      if (!employee.clientId) return;
+
+      const departments = await departmentService.getDepartmentsByClient(employee.clientId);
+      const assignedDepartment = departments.find((department) => department.department_id === employee.departmentId) ?? departments[0];
+      console.log("hello")
+      if (!assignedDepartment) return;
+      navigate('/ops-admin/clients/' + employee.clientId + '/departments/' + assignedDepartment.department_id);
+      return;
+    }
+    // console.log("hello2")
+    navigate('assign');
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -97,6 +114,23 @@ export const GetEmployee = () => {
           >
             Copy ID
           </Button> */}
+          <Button
+            type="button"
+            variant="outline"
+            icon={<UserPlus className="h-4 w-4" />}
+            disabled={!employee.isActive || employee.isAssigned}
+            title={
+              !employee.isActive
+                ? 'Inactive employee cannot be assigned'
+                : employee.isAssigned
+                  ? 'Open assigned department'
+                  : 'Assign employee'
+            }
+            onClick={handleAssignEmployee}
+          >
+            {/* {employee.isAssigned ? 'View Assignment' : 'Assign Employee'} */}
+            Assign Employee
+          </Button>
           <Button
             type="button"
             variant="primary"
@@ -153,7 +187,7 @@ export const GetEmployee = () => {
                   Record status
                 </p>
                 <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">
-                  {employee.isAssigned ?'Already assigned' : 'Not assigned'}
+                  {employee.isAssigned ? 'Already assigned' : 'Not assigned'}
                 </p>
               </div>
             </div>

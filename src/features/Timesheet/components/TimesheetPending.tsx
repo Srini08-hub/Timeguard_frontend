@@ -1,14 +1,17 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState, type KeyboardEvent, type MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Building2,
   CalendarDays,
   Inbox,
+  Mail,
   RefreshCw,
+  Search,
 } from 'lucide-react';
 
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
+import { Input } from '../../../components/ui/Input';
 import { Select } from '../../../components/ui/Select';
 import { Table, type TableColumn } from '../../../components/ui/Table';
 import { useProcessedTimesheets, useUnderReviewTimesheets } from '../hooks/useTimesheets';
@@ -58,18 +61,50 @@ const getStatusVariant = (status: string | null | undefined) => {
 
 const hasClientName = (timesheet: Timesheet) => Boolean(timesheet.client_name?.trim());
 
+const getDateTime = (value: string | null | undefined) => {
+  if (!value) return null;
+  const parsedTime = Date.parse(value);
+  return Number.isNaN(parsedTime) ? null : parsedTime;
+};
+
+const getInputDateTime = (value: string, useEndOfDay = false) => {
+  if (!value) return null;
+  const parsedTime = Date.parse(value + (useEndOfDay ? 'T23:59:59.999' : 'T00:00:00'));
+  return Number.isNaN(parsedTime) ? null : parsedTime;
+};
+
+const matchesClientSearch = (timesheet: Timesheet, searchTerm: string) => {
+  if (!searchTerm) return true;
+  return (timesheet.client_name ?? '').toLowerCase().includes(searchTerm.toLowerCase());
+};
+
+const matchesCreatedRange = (timesheet: Timesheet, fromDate: string, toDate: string) => {
+  const createdTime = getDateTime(timesheet.created_at);
+  const fromTime = getInputDateTime(fromDate);
+  const toTime = getInputDateTime(toDate, true);
+
+  if ((fromTime !== null || toTime !== null) && createdTime === null) return false;
+  if (fromTime !== null && createdTime !== null && createdTime < fromTime) return false;
+  if (toTime !== null && createdTime !== null && createdTime > toTime) return false;
+
+  return true;
+};
+
 export const TimesheetPending = () => {
   const [activeTab] = useState<ClientMatchTab>('matched');
   const [selectedStatus, setSelectedStatus] = useState<ReviewStatus>('under_review');
   const [currentPage, setCurrentPage] = useState(1);
+  const [clientSearchInput, setClientSearchInput] = useState('');
+  const [weekEndingFromInput, setWeekEndingFromInput] = useState('');
+  const [weekEndingToInput, setWeekEndingToInput] = useState('');
+  const [clientSearch, setClientSearch] = useState('');
+  const [weekEndingFrom, setWeekEndingFrom] = useState('');
+  const [weekEndingTo, setWeekEndingTo] = useState('');
   const navigate = useNavigate();
 
   const underReviewQuery = useUnderReviewTimesheets();
   const processedQuery = useProcessedTimesheets();
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [activeTab, selectedStatus]);
 
   const selectedStatusTimesheets = selectedStatus === 'under_review'
     ? underReviewQuery.data ?? []
@@ -85,7 +120,11 @@ export const TimesheetPending = () => {
 
   const matchedTimesheets = selectedStatusTimesheets.filter(hasClientName);
   const unmatchedTimesheets = allKnownTimesheets.filter((timesheet) => !hasClientName(timesheet));
-  const visibleTimesheets = activeTab === 'matched' ? matchedTimesheets : unmatchedTimesheets;
+  const unfilteredVisibleTimesheets = activeTab === 'matched' ? matchedTimesheets : unmatchedTimesheets;
+  const visibleTimesheets = unfilteredVisibleTimesheets.filter((timesheet) => (
+    matchesClientSearch(timesheet, clientSearch) &&
+    matchesCreatedRange(timesheet, weekEndingFrom, weekEndingTo)
+  ));
 
   const isLoading = activeTab === 'matched'
     ? selectedStatus === 'under_review'
@@ -109,6 +148,31 @@ export const TimesheetPending = () => {
   const refreshQueues = () => {
     underReviewQuery.refetch();
     processedQuery.refetch();
+  };
+
+  const applyFilters = () => {
+    setClientSearch(clientSearchInput.trim());
+    setWeekEndingFrom(weekEndingFromInput);
+    setWeekEndingTo(weekEndingToInput);
+    setCurrentPage(1);
+  };
+
+  const openMailDetails = (
+    timesheet: Timesheet,
+    event: MouseEvent<HTMLButtonElement>,
+  ) => {
+    event.stopPropagation();
+
+    navigate('/reviewer/emails/' + timesheet.email_id, {
+      state: {
+        category: 'timesheet',
+        filter: 'timesheet',
+      },
+    });
+  };
+
+  const stopMailButtonKeydown = (event: KeyboardEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
   };
 
   const columns: TableColumn<Timesheet>[] = [
@@ -139,6 +203,24 @@ export const TimesheetPending = () => {
         <Badge variant={getStatusVariant(timesheet.status)}>
           {getStatusLabel(timesheet.status)}
         </Badge>
+      ),
+    },
+    {
+      key: 'mail',
+      header: 'Mail',
+      className: 'text-center',
+      accessor: (timesheet) => (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="mx-auto h-9 w-9"
+          icon={<Mail className="h-4 w-4" />}
+          aria-label={'Open mail details for ' + (timesheet.client_name || 'timesheet')}
+          title="Open mail details"
+          onClick={(event) => openMailDetails(timesheet, event)}
+          onKeyDown={stopMailButtonKeydown}
+        />
       ),
     },
     {
@@ -184,32 +266,70 @@ export const TimesheetPending = () => {
         </div>
 
         <div className="grid gap-3 border-b border-[var(--border-color)] bg-white p-5 md:grid-cols-3">
-          <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card-soft)] px-5 py-4">
+          {/* <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card-soft)] px-5 py-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Client matched</p>
             <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">{matchedTimesheets.length}</p>
           </div>
           <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card-soft)] px-5 py-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Needs client match</p>
             <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">{unmatchedTimesheets.length}</p>
-          </div>
+          </div> */}
           <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card-soft)] px-5 py-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Visible records</p>
             <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">{visibleTimesheets.length}</p>
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 bg-white px-5 py-4 xl:flex-row xl:items-end xl:justify-between">
-          {activeTab === 'matched' && (
-            <div className="w-full xl:max-w-xs">
+        <div className="bg-white px-5 py-4">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[16rem_12rem_12rem_minmax(14rem,1fr)_auto] xl:items-end">
+            {activeTab === 'matched' && (
               <Select
                 label="Review status"
                 value={selectedStatus}
                 options={statusOptions}
                 fullWidth
-                onChange={(event) => setSelectedStatus(event.target.value as ReviewStatus)}
+                onChange={(event) => {
+                  setSelectedStatus(event.target.value as ReviewStatus);
+                  setCurrentPage(1);
+                }}
               />
-            </div>
-          )}
+            )}
+
+            <Input
+              type="date"
+              label="Created from"
+              value={weekEndingFromInput}
+              fullWidth
+              onChange={(event) => setWeekEndingFromInput(event.target.value)}
+            />
+            <Input
+              type="date"
+              label="Created to"
+              value={weekEndingToInput}
+              fullWidth
+              onChange={(event) => setWeekEndingToInput(event.target.value)}
+            />
+            <Input
+              type="search"
+              label="Client name"
+              value={clientSearchInput}
+              placeholder="Search client name"
+              fullWidth
+              onChange={(event) => setClientSearchInput(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  applyFilters();
+                }
+              }}
+            />
+            <Button
+              type="button"
+              icon={<Search className="h-4 w-4" />}
+              onClick={applyFilters}
+            >
+              Search
+            </Button>
+          </div>
         </div>
       </section>
 

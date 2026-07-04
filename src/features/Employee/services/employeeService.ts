@@ -13,6 +13,26 @@ const toEmployeeResponse = (employee: EmployeeApiResponse): EmployeeResponse => 
   name: employee.name,
   isActive: employee.is_active,
   isAssigned: employee.is_assigned,
+  clientId:
+    employee.client_id ??
+    employee.clientId ??
+    employee.assigned_client_id ??
+    employee.assignment?.client_id ??
+    employee.assignment?.clientId ??
+    employee.client?.client_id ??
+    employee.client?.clientId ??
+    employee.department?.client_id ??
+    employee.department?.clientId ??
+    null,
+  departmentId:
+    employee.department_id ??
+    employee.departmentId ??
+    employee.assigned_department_id ??
+    employee.assignment?.department_id ??
+    employee.assignment?.departmentId ??
+    employee.department?.department_id ??
+    employee.department?.departmentId ??
+    null,
   createdAt: employee.created_at,
 //   createdBy: employee.created_by,
 });

@@ -13,6 +13,7 @@ import { ExceptionDetail } from '../features/Timesheet/components/ExceptionDetai
 import { ReviewerTimecards } from '../features/Timesheet/components/ReviewerTimecards';
 import { GetAllEmployee } from '../features/Employee/components/GetAllEmployee';
 import { GetEmployee } from '../features/Employee/components/GetEmployee';
+import { EmployeeAssignmentClients, EmployeeAssignmentDepartments } from '../features/Employee/components/EmployeeAssignmentFlow';
 import { Clients } from '../features/Client/components/Clients';
 import { ClientDetails } from '../features/Client/components/ClientDetails';
 import { DepartmentDetails } from '../features/Department/components/DepartmentDetails';
@@ -48,6 +49,8 @@ const AppRoutes: React.FC = () => {
           <Route index element={<Navigate to="employees" replace />} />
           <Route path="employees" element={<GetAllEmployee />} />
           <Route path="employees/:empId" element={<GetEmployee />} />
+          <Route path="employees/:empId/assign" element={<EmployeeAssignmentClients />} />
+          <Route path="employees/:empId/assign/:clientId/departments" element={<EmployeeAssignmentDepartments />} />
           <Route path="clients" element={<Clients />} />
           <Route path="clients/:clientId" element={<ClientDetails />} />
           <Route path="clients/:clientId/departments/:departmentId" element={<DepartmentDetails />} />
@@ -78,5 +81,3 @@ const AppRoutes: React.FC = () => {
 };
 
 export default AppRoutes;
-
-
