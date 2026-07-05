@@ -215,14 +215,7 @@ export const ClientRuleFormPage = () => {
               </div>
             </div>
 
-            <div className="rounded-lg border border-[var(--border-color)] bg-white px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-                Department ID
-              </p>
-              <p className="mt-1 max-w-72 truncate font-mono text-sm text-[var(--text-primary)]">
-                {departmentId}
-              </p>
-            </div>
+            
           </div>
         </div>
 
@@ -357,9 +350,7 @@ export const ClientRuleFormPage = () => {
                   <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
                     Rule ID
                   </p>
-                  <p className="mt-1 break-all font-mono text-xs text-[var(--text-secondary)]">
-                    {ruleId}
-                  </p>
+                  
                 </div>
               )}
             </aside>

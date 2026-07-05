@@ -1,18 +1,22 @@
-FROM node:20-slim
+FROM node:20-slim AS build
 
 WORKDIR /app
 
-# Copy package.json and package-lock.json
 COPY package.json package-lock.json* ./
+RUN npm ci
 
-# Install dependencies
-RUN npm install
-
-# Copy source code
 COPY . .
 
-# Expose port 5173 (Vite dev server default port)
-EXPOSE 5173
+ARG VITE_API_URL
+ENV VITE_API_URL=${VITE_API_URL}
 
-# Start development server with host flag to allow external connections
-CMD ["npm", "run", "dev", "--", "--host"]
+RUN npm run build
+
+FROM nginx:1.27-alpine
+
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

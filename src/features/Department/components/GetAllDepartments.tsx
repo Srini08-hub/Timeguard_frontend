@@ -139,9 +139,7 @@ export const GetAllDepartments = ({ clientId, onCreate, onDepartmentClick }: Get
               </span>
               <ArrowUpRight className="h-3.5 w-3.5 text-[var(--text-muted)]" />
             </div>
-            <span className="mt-0.5 block truncate font-mono text-xs text-[var(--text-muted)]">
-              {department.department_id}
-            </span>
+           
           </div>
         </div>
       ),
@@ -156,15 +154,7 @@ export const GetAllDepartments = ({ clientId, onCreate, onDepartmentClick }: Get
         </span>
       ),
     },
-    {
-      key: 'client',
-      header: 'Client ID',
-      accessor: (department) => (
-        <span className="font-mono text-xs text-[var(--text-secondary)]">
-          {department.client_id}
-        </span>
-      ),
-    },
+    
     {
       key: 'actions',
       header: <span className="sr-only">Actions</span>,

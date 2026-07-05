@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { EMPLOYEE_ENDPOINTS } from '../../../config/constant';
 import axiosInstance from '../../../lib/auth';
 import type {
@@ -6,6 +7,29 @@ import type {
   EmployeeResponse,
   EmployeeUpdate,
 } from '../types/index';
+
+const getApiErrorMessage = (error: unknown): string => {
+    if (axios.isAxiosError(error)) {
+        const responseData = error.response?.data as {
+            detail?: string;
+            error_type?: string;
+            message?: string;
+        } | undefined;
+
+        const detail = responseData?.detail ?? responseData?.message;
+        if (detail) {
+            return responseData?.error_type ? `${responseData.error_type}: ${detail}` : detail;
+        }
+
+        return error.message;
+    }
+
+    if (error instanceof Error) {
+        return error.message;
+    }
+
+    return 'Employee operation failed';
+};
 
 const toEmployeeResponse = (employee: EmployeeApiResponse): EmployeeResponse => ({
   empId: employee.emp_id,
@@ -39,47 +63,75 @@ const toEmployeeResponse = (employee: EmployeeApiResponse): EmployeeResponse => 
 
 export const employeeService = {
     getActiveEmployees: async (): Promise<EmployeeResponse[]> => {
-        const response = await axiosInstance.get<EmployeeApiResponse[]>(
-            EMPLOYEE_ENDPOINTS.GET_ACTIVE_EMPLOYEES,
-        );
-        return response.data.map(toEmployeeResponse);
+        try {
+            const response = await axiosInstance.get<EmployeeApiResponse[]>(
+                EMPLOYEE_ENDPOINTS.GET_ACTIVE_EMPLOYEES,
+            );
+            return response.data.map(toEmployeeResponse);
+        } catch (error) {
+            throw new Error(getApiErrorMessage(error));
+        }
     },
     getInactiveEmployees: async (): Promise<EmployeeResponse[]> => {
-        const response = await axiosInstance.get<EmployeeApiResponse[]>(
-            EMPLOYEE_ENDPOINTS.GET_INACTIVE_EMPLOYEES,
-        );
-        return response.data.map(toEmployeeResponse);
+        try {
+            const response = await axiosInstance.get<EmployeeApiResponse[]>(
+                EMPLOYEE_ENDPOINTS.GET_INACTIVE_EMPLOYEES,
+            );
+            return response.data.map(toEmployeeResponse);
+        } catch (error) {
+            throw new Error(getApiErrorMessage(error));
+        }
     },
     getEmployee: async (empId: string): Promise<EmployeeResponse> => {
-        const response = await axiosInstance.get<EmployeeApiResponse>(
-            EMPLOYEE_ENDPOINTS.GET_EMPLOYEE(empId),
-        );
-        return toEmployeeResponse(response.data);
+        try {
+            const response = await axiosInstance.get<EmployeeApiResponse>(
+                EMPLOYEE_ENDPOINTS.GET_EMPLOYEE(empId),
+            );
+            return toEmployeeResponse(response.data);
+        } catch (error) {
+            throw new Error(getApiErrorMessage(error));
+        }
     },
     getUnassignedEmployees: async (): Promise<EmployeeResponse[]> => {
-        const response = await axiosInstance.get<EmployeeApiResponse[]>(
-            EMPLOYEE_ENDPOINTS.GET_UNASSIGNED_EMPLOYEES,
-        );
-        return response.data.map(toEmployeeResponse);
+        try {
+            const response = await axiosInstance.get<EmployeeApiResponse[]>(
+                EMPLOYEE_ENDPOINTS.GET_UNASSIGNED_EMPLOYEES,
+            );
+            return response.data.map(toEmployeeResponse);
+        } catch (error) {
+            throw new Error(getApiErrorMessage(error));
+        }
     },
     createEmployee: async (employeeData: EmployeeCreate): Promise<EmployeeResponse> => {
-        const response = await axiosInstance.post<EmployeeApiResponse>(
-            EMPLOYEE_ENDPOINTS.CREATE_EMPLOYEE,
-            employeeData,
-        );
-        return toEmployeeResponse(response.data);
+        try {
+            const response = await axiosInstance.post<EmployeeApiResponse>(
+                EMPLOYEE_ENDPOINTS.CREATE_EMPLOYEE,
+                employeeData,
+            );
+            return toEmployeeResponse(response.data);
+        } catch (error) {
+            throw new Error(getApiErrorMessage(error));
+        }
     },
     updateEmployee: async (empId: string, employeeData: EmployeeUpdate): Promise<EmployeeResponse> => {
-        const response = await axiosInstance.put<EmployeeApiResponse>(
-            EMPLOYEE_ENDPOINTS.UPDATE_EMPLOYEE(empId),
-            employeeData,
-        );
-        return toEmployeeResponse(response.data);
+        try {
+            const response = await axiosInstance.put<EmployeeApiResponse>(
+                EMPLOYEE_ENDPOINTS.UPDATE_EMPLOYEE(empId),
+                employeeData,
+            );
+            return toEmployeeResponse(response.data);
+        } catch (error) {
+            throw new Error(getApiErrorMessage(error));
+        }
     },
     deleteEmployee: async (empId: string): Promise<EmployeeResponse> => {
-        const response = await axiosInstance.delete<EmployeeApiResponse>(
-            EMPLOYEE_ENDPOINTS.DELETE_EMPLOYEE(empId),
-        );
-        return toEmployeeResponse(response.data);
+        try {
+            const response = await axiosInstance.delete<EmployeeApiResponse>(
+                EMPLOYEE_ENDPOINTS.DELETE_EMPLOYEE(empId),
+            );
+            return toEmployeeResponse(response.data);
+        } catch (error) {
+            throw new Error(getApiErrorMessage(error));
+        }
     },
 };

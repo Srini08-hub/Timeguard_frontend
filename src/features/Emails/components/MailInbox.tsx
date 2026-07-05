@@ -70,6 +70,11 @@ const getSubject = (email: TimesheetEmailResponse) => {
   return email.subject?.trim() || 'No subject';
 };
 
+const getTrimmedSubject = (email: TimesheetEmailResponse, maxLength = 15) => {
+  const subject = getSubject(email);
+  return subject.length > maxLength ? subject.slice(0, maxLength) + '...' : subject;
+};
+
 const getReceivedTime = (email: TimesheetEmailResponse) => {
   const receivedTime = Date.parse(email.received_at);
   return Number.isNaN(receivedTime) ? 0 : receivedTime;
@@ -224,7 +229,7 @@ export const MailInbox = () => {
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <span className="truncate font-semibold text-[var(--text-primary)]">
-                {getSubject(email)}
+                {getTrimmedSubject(email)}
               </span>
               <ArrowUpRight className="h-3.5 w-3.5 text-[var(--text-muted)]" />
             </div>

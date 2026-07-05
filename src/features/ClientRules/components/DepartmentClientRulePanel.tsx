@@ -148,9 +148,9 @@ export const DepartmentClientRulePanel = ({
         </div>
       )}
 
-      <div className="border-t border-[var(--border-color)] px-6 py-3 text-xs text-[var(--text-muted)]">
+      {/* <div className="border-t border-[var(--border-color)] px-6 py-3 text-xs text-[var(--text-muted)]">
         Client ID: <span className="font-mono">{clientId}</span>
-      </div>
+      </div> */}
     </section>
   );
 };

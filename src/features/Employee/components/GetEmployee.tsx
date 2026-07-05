@@ -165,14 +165,7 @@ export const GetEmployee = () => {
               </div>
             </div>
 
-            <div className="rounded-lg border border-[var(--border-color)] bg-white px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-                Employee ID
-              </p>
-              <p className="mt-1 font-mono text-sm text-[var(--text-primary)]">
-                {employee.empId}
-              </p>
-            </div>
+            
           </div>
         </div>
 
@@ -241,10 +234,10 @@ export const GetEmployee = () => {
               <dt className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Email</dt>
               <dd className="mt-1 text-sm font-medium text-[var(--text-primary)]">{employee.email}</dd>
             </div>
-            <div>
+            {/* <div>
               <dt className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Employee ID</dt>
               <dd className="mt-1 font-mono text-sm font-medium text-[var(--text-primary)]">{employee.empId}</dd>
-            </div>
+            </div> */}
             <div>
               <dt className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Status</dt>
               <dd className="mt-1 text-sm font-medium text-[var(--text-primary)]">

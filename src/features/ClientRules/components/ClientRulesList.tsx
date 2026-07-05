@@ -125,9 +125,9 @@ export const ClientRulesList = () => {
                 {rule.is_active ? 'Active' : 'Inactive'}
               </Badge>
             </div>
-            <span className="mt-0.5 block truncate font-mono text-xs text-[var(--text-muted)]">
+            {/* <span className="mt-0.5 block truncate font-mono text-xs text-[var(--text-muted)]">
               {rule.rule_id}
-            </span>
+            </span> */}
           </div>
         </div>
       ),

@@ -147,14 +147,7 @@ export const ClientDetails = () => {
               </div>
             </div>
 
-            <div className="rounded-lg border border-[var(--border-color)] bg-white px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-                Client ID
-              </p>
-              <p className="mt-1 font-mono text-sm text-[var(--text-primary)]">
-                {client.client_id}
-              </p>
-            </div>
+            
           </div>
         </div>
 

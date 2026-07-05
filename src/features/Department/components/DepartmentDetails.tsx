@@ -138,14 +138,7 @@ export const DepartmentDetails = ({ department, clientId, onBack }: DepartmentDe
               </div>
             </div>
 
-            <div className="rounded-lg border border-[var(--border-color)] bg-white px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-                Department ID
-              </p>
-              <p className="mt-1 font-mono text-sm text-[var(--text-primary)]">
-                {selectedDepartment.department_id}
-              </p>
-            </div>
+            
           </div>
         </div>
 
