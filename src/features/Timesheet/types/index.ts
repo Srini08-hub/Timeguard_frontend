@@ -21,6 +21,7 @@ export interface TimesheetSheetPayload {
 
 export interface TimesheetRecord {
   date?: string | null;
+  day?:string | null;
   check_in?: string | null;
   check_out?: string | null;
   break_hour?: string | null;

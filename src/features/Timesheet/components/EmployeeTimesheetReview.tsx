@@ -187,6 +187,7 @@ const buildSourceViews = (
 
 const recordColumns: TableColumn<TimesheetRecord>[] = [
   { key: 'date', header: 'Date', accessor: (record) => stringifyValue(record.date) },
+  { key: 'day', header: 'Day', accessor: (record) => stringifyValue(record.day) },
   { key: 'checkIn', header: 'Check In', accessor: (record) => stringifyValue(record.check_in ?? record.in_time) },
   { key: 'checkOut', header: 'Check Out', accessor: (record) => stringifyValue(record.check_out ?? record.out_time) },
   { key: 'break', header: 'Break', accessor: (record) => stringifyValue(record.break_hour) },
