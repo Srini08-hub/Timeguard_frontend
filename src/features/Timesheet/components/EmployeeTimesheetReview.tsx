@@ -375,6 +375,7 @@ export const EmployeeTimesheetReview = () => {
     );
   }
 
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -385,7 +386,7 @@ export const EmployeeTimesheetReview = () => {
           icon={<ArrowLeft className="h-4 w-4" />}
           onClick={() => navigate('/reviewer/timesheets')}
         >
-          Timesheets
+          Timecards
         </Button>
 
         <div className="flex flex-wrap gap-2">
@@ -437,7 +438,18 @@ export const EmployeeTimesheetReview = () => {
                     <span className="text-[var(--text-muted)]"></span>
                   ) : (
                     sources.map((source) => (
-                      source.attachmentUrl ? (
+                      source.sourceType === 'email' ? (
+                        <button
+                          key={source.key}
+                          type="button"
+                          className="inline-flex max-w-48 items-center gap-1.5 rounded-md border border-[var(--border-color)] bg-white px-2 py-1 text-xs font-medium text-[var(--text-secondary)] transition-colors hover:border-[var(--primary)] hover:text-[var(--primary)]"
+                          title={source.fileName}
+                          onClick={() => navigate(`/reviewer/emails/${timesheet?.email_id}`)}
+                        >
+                          <FileText className="h-3.5 w-3.5 shrink-0 text-[var(--primary)]" />
+                          <span className="truncate">{source.fileName}</span>
+                        </button>
+                      ) : source.attachmentUrl ? (
                         <button
                           key={source.key}
                           type="button"

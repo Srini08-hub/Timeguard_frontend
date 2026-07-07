@@ -25,7 +25,7 @@ const Reviewer: React.FC = () => {
     : location.pathname.includes('/timecards') && !location.pathname.includes('/exception')
       ? 'Payroll'
       : location.pathname.includes('/timesheets')
-        ? 'timecards'
+        ? 'Timecards'
         : reviewerItems.find((item) => item.href === (location.pathname.split('/').pop() ?? ''))?.label ?? 'Reviewer';
 
   return (

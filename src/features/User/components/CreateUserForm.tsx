@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, UserPlus } from 'lucide-react';
+import {  UserPlus } from 'lucide-react';
 
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
@@ -98,7 +98,7 @@ export const CreateUserForm = ({ onBack, onCreated }: CreateUserFormProps) => {
                 </p>
               </div>
             </div>
-            {onBack && (
+            {/* {onBack && (
               <Button
                 type="button"
                 variant="outline"
@@ -108,7 +108,7 @@ export const CreateUserForm = ({ onBack, onCreated }: CreateUserFormProps) => {
               >
                 Back
               </Button>
-            )}
+            )} */}
           </div>
         </div>
 
