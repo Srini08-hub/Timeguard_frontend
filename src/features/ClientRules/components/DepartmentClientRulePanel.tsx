@@ -34,7 +34,6 @@ const pickPrimaryRule = (rules: ClientRuleResponse[]) => {
 };
 
 export const DepartmentClientRulePanel = ({
-  clientId,
   departmentId,
   departmentName,
 }: DepartmentClientRulePanelProps) => {

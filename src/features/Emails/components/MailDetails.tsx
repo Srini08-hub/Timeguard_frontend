@@ -285,7 +285,7 @@ export const MailDetails = () => {
               </div>
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="truncate text-2xl font-semibold tracking-tight text-[var(--text-primary)]">
+                  <h1 className="break-words text-2xl font-semibold tracking-tight text-[var(--text-primary)]">
                     {getSubject(selectedEmail)}
                   </h1>
                   <Badge variant={getStatusVariant(selectedEmail.status)}>

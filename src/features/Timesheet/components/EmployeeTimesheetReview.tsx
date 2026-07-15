@@ -48,6 +48,7 @@ import type {
 } from '../types';
 
 interface EmployeeReviewLocationState {
+  returnTo?: string;
   timecard?: TimecardEntry;
   timesheet?: Timesheet;
 }
@@ -62,6 +63,8 @@ interface SourceView {
 }
 
 const normalize = (value: string | null | undefined) => (value ?? '').trim().toLowerCase();
+
+const normalizeStatusValue = (status: string | null | undefined) => normalize(status).replace(/[\s-]+/g, '_');
 
 const stringifyValue = (value: unknown) => {
   if (value === null || value === undefined || value === '') return '';
@@ -102,15 +105,17 @@ const formatHours = (value: number | string | null | undefined) => {
 };
 
 const formatStatus = (status: string) => {
-  if (status === 'no_exception') return 'No Exception';
+  const normalizedStatus = normalizeStatusValue(status);
+  if (normalizedStatus === 'no_exception' || normalizedStatus === 'clean') return 'Ready for Approval';
   return status.replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
 };
 
 const getStatusVariant = (status: string): NonNullable<BadgeProps['variant']> => {
-  if (status === 'no_exception' || status === 'approved') return 'success';
-  if (status === 'exception') return 'warning';
-  if (status === 'rejected') return 'danger';
-  if (status === 'pending') return 'warning';
+  const normalizedStatus = normalizeStatusValue(status);
+  if (normalizedStatus === 'no_exception' || normalizedStatus === 'clean' || normalizedStatus === 'approved') return 'success';
+  if (normalizedStatus === 'exception') return 'warning';
+  if (normalizedStatus === 'rejected') return 'danger';
+  if (normalizedStatus === 'pending') return 'warning';
   return 'neutral';
 };
 
@@ -235,6 +240,7 @@ export const EmployeeTimesheetReview = () => {
   const [reviewComment, setReviewComment] = useState('');
   const [formError, setFormError] = useState('');
   const routeState = location.state as EmployeeReviewLocationState | null;
+  const returnTo = routeState?.returnTo || '/reviewer/timesheets';
 
   const timecardQuery = useTimecard(timecardId);
   const underReviewQuery = useUnderReviewTimesheets();
@@ -368,7 +374,7 @@ export const EmployeeTimesheetReview = () => {
         <p className="mt-2 text-sm text-[var(--danger-text)]">
           {error?.message || 'The selected employee timecard could not be found.'}
         </p>
-        <Button className="mt-5" variant="outline" onClick={() => navigate('/reviewer/timesheets')}>
+        <Button className="mt-5" variant="outline" onClick={() => navigate(returnTo)}>
           Back to Timesheets
         </Button>
       </div>
@@ -384,7 +390,7 @@ export const EmployeeTimesheetReview = () => {
           variant="ghost"
           size="sm"
           icon={<ArrowLeft className="h-4 w-4" />}
-          onClick={() => navigate('/reviewer/timesheets')}
+          onClick={() => navigate(returnTo)}
         >
           Timecards
         </Button>

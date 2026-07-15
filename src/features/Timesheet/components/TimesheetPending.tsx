@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type KeyboardEvent } from 'react';
 import { useQueries } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   AlertTriangle,
   CheckCircle2,
@@ -57,14 +57,62 @@ interface EmployeeReviewRow {
   sourceCount: number;
 }
 
+const DEFAULT_STATUS_FILTERS: StatusFilter[] = [
+  'no_exception',
+  'exception',
+  'approved',
+  'rejected',
+];
+
 const statusOptions: { value: StatusFilter; label: string }[] = [
-  { value: 'no_exception', label: 'No Exception' },
+  { value: 'no_exception', label: 'Ready for Approval' },
   { value: 'exception', label: 'Exception' },
   { value: 'approved', label: 'Approved' },
   { value: 'rejected', label: 'Rejected' },
 ];
 
 const normalize = (value: string | null | undefined) => (value ?? '').trim().toLowerCase();
+
+const normalizeStatusValue = (status: string | null | undefined) => normalize(status).replace(/[\s-]+/g, '_');
+
+const isStatusFilter = (value: string): value is StatusFilter => {
+  return value === 'no_exception' || value === 'exception' || value === 'approved' || value === 'rejected';
+};
+
+const parseStatusFilters = (value: string | null): StatusFilter[] => {
+  if (value === 'none') return [];
+  if (!value) return [...DEFAULT_STATUS_FILTERS];
+
+  const statuses = value.split(',').filter(isStatusFilter);
+  return statuses.length > 0 ? statuses : [...DEFAULT_STATUS_FILTERS];
+};
+
+const serializeStatusFilters = (statuses: StatusFilter[]) => {
+  if (statuses.length === 0) return 'none';
+  return statusOptions
+    .map((option) => option.value)
+    .filter((status) => statuses.includes(status))
+    .join(',');
+};
+
+const areDefaultStatusFilters = (statuses: StatusFilter[]) => {
+  return DEFAULT_STATUS_FILTERS.length === statuses.length
+    && DEFAULT_STATUS_FILTERS.every((status) => statuses.includes(status));
+};
+
+const parsePage = (value: string | null) => {
+  const page = Number(value);
+  return Number.isInteger(page) && page > 0 ? page : 1;
+};
+
+const hasPersistedFilters = (searchParams: URLSearchParams) => {
+  return Boolean(
+    searchParams.get('client')
+    || searchParams.get('department')
+    || searchParams.get('weekEnding')
+    || searchParams.get('statuses'),
+  );
+};
 
 const formatHours = (value: number | string | null | undefined) => {
   if (value === null || value === undefined || value === '') return '0.00';
@@ -123,23 +171,26 @@ const getEmployeeRecords = (payload: TimesheetExtractedPayload | null | undefine
 };
 
 const getStatusVariant = (status: string): NonNullable<BadgeProps['variant']> => {
-  if (status === 'no_exception' || status === 'approved') return 'success';
-  if (status === 'exception') return 'warning';
-  if (status === 'rejected') return 'danger';
-  if (status === 'pending') return 'warning';
+  const normalizedStatus = normalizeStatusValue(status);
+  if (normalizedStatus === 'no_exception' || normalizedStatus === 'clean' || normalizedStatus === 'approved') return 'success';
+  if (normalizedStatus === 'exception') return 'warning';
+  if (normalizedStatus === 'rejected') return 'danger';
+  if (normalizedStatus === 'pending') return 'warning';
   return 'neutral';
 };
 
 const formatStatus = (status: string) => {
-  if (status === 'no_exception') return 'No Exception';
+  const normalizedStatus = normalizeStatusValue(status);
+  if (normalizedStatus === 'no_exception' || normalizedStatus === 'clean') return 'Ready for Approval';
   return status.replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
 };
 
 const getRowStatus = (timecard: TimecardEntry): StatusFilter | null => {
-  if (timecard.status === 'no_exception' || timecard.status === 'clean') return 'no_exception';
-  if (timecard.status === 'exception') return 'exception';
-  if (timecard.status === 'approved') return 'approved';
-  if (timecard.status === 'rejected') return 'rejected';
+  const normalizedStatus = normalizeStatusValue(timecard.status);
+  if (normalizedStatus === 'no_exception' || normalizedStatus === 'clean') return 'no_exception';
+  if (normalizedStatus === 'exception') return 'exception';
+  if (normalizedStatus === 'approved') return 'approved';
+  if (normalizedStatus === 'rejected') return 'rejected';
   return null;
 };
 
@@ -169,8 +220,7 @@ const SearchableCombobox = ({
   const filteredOptions = useMemo(() => {
     const search = normalize(query);
     return options
-      .filter((option) => !search || normalize(option.label).includes(search))
-      .slice(0, 4);
+      .filter((option) => !search || normalize(option.label).includes(search));
   }, [options, query]);
 
   return (
@@ -227,21 +277,18 @@ const SearchableCombobox = ({
 };
 
 export const TimesheetPending = () => {
+  const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const toast = useToast();
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [selectedClientId, setSelectedClientId] = useState('');
-  const [selectedDepartmentId, setSelectedDepartmentId] = useState('');
-  const [weekEnding, setWeekEnding] = useState('');
-  const [selectedStatuses, setSelectedStatuses] = useState<StatusFilter[]>([
-    'no_exception',
-    'exception',
-    'approved',
-    'rejected',
-  ]);
+  const [isFilterOpen, setIsFilterOpen] = useState(() => searchParams.get('filters') === '1' || hasPersistedFilters(searchParams));
+  const [selectedClientId, setSelectedClientId] = useState(() => searchParams.get('client') ?? '');
+  const [selectedDepartmentId, setSelectedDepartmentId] = useState(() => searchParams.get('department') ?? '');
+  const [weekEnding, setWeekEnding] = useState(() => searchParams.get('weekEnding') ?? '');
+  const [selectedStatuses, setSelectedStatuses] = useState<StatusFilter[]>(() => parseStatusFilters(searchParams.get('statuses')));
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [pendingAction, setPendingAction] = useState<PendingTimecardAction>(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(() => parsePage(searchParams.get('page')));
 
   const underReviewQuery = useUnderReviewTimesheets();
   const processedQuery = useProcessedTimesheets();
@@ -346,6 +393,23 @@ export const TimesheetPending = () => {
   const error = underReviewQuery.error || processedQuery.error || timecardQueries.find((query) => query.error)?.error || approvedQuery.error || rejectedQuery.error;
 
   useEffect(() => {
+    const nextSearchParams = new URLSearchParams();
+
+    if (selectedClientId) nextSearchParams.set('client', selectedClientId);
+    if (selectedDepartmentId) nextSearchParams.set('department', selectedDepartmentId);
+    if (weekEnding) nextSearchParams.set('weekEnding', weekEnding);
+    if (!areDefaultStatusFilters(selectedStatuses)) nextSearchParams.set('statuses', serializeStatusFilters(selectedStatuses));
+    if (currentPage > 1) nextSearchParams.set('page', String(currentPage));
+    if (isFilterOpen) nextSearchParams.set('filters', '1');
+
+    const nextSearch = nextSearchParams.toString();
+    const currentSearch = location.search.startsWith('?') ? location.search.slice(1) : location.search;
+    if (nextSearch !== currentSearch) {
+      setSearchParams(nextSearchParams, { replace: true });
+    }
+  }, [currentPage, isFilterOpen, location.search, selectedClientId, selectedDepartmentId, selectedStatuses, setSearchParams, weekEnding]);
+
+  useEffect(() => {
     setCurrentPage(1);
   }, [selectedClientId, selectedDepartmentId, selectedStatuses, weekEnding]);
 
@@ -437,6 +501,7 @@ export const TimesheetPending = () => {
   const openEmployeeReview = (row: EmployeeReviewRow) => {
     navigate('employees/' + row.timecard.timecard_id, {
       state: {
+        returnTo: location.pathname + location.search,
         timecard: row.timecard,
         timesheet: row.timesheet,
       },
@@ -475,8 +540,8 @@ export const TimesheetPending = () => {
       header: 'Employee',
       accessor: (row) => (
         <div className="flex min-w-64 items-center gap-3">
-          <div className={'flex h-10 w-10 items-center justify-center rounded-lg ' + (row.timecard.status === 'exception' ? 'bg-[var(--warning-bg)] text-[var(--warning-text)]' : 'bg-[var(--primary-soft)] text-[var(--primary)]')}>
-            {row.timecard.status === 'exception' ? <AlertTriangle className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />}
+          <div className={'flex h-10 w-10 items-center justify-center rounded-lg ' + (getRowStatus(row.timecard) === 'exception' ? 'bg-[var(--warning-bg)] text-[var(--warning-text)]' : 'bg-[var(--primary-soft)] text-[var(--primary)]')}>
+            {getRowStatus(row.timecard) === 'exception' ? <AlertTriangle className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />}
           </div>
           <div className="min-w-0">
             <p className="truncate font-semibold text-[var(--text-primary)]">
@@ -629,11 +694,11 @@ export const TimesheetPending = () => {
           </div>
           <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card-soft)] px-5 py-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Exceptions</p>
-            <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">{visibleRows.filter((row) => row.timecard.status === 'exception').length}</p>
+            <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">{visibleRows.filter((row) => getRowStatus(row.timecard) === 'exception').length}</p>
           </div>
           <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card-soft)] px-5 py-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Approved</p>
-            <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">{visibleRows.filter((row) => row.timecard.status === 'approved').length}</p>
+            <p className="mt-2 text-2xl font-semibold text-[var(--text-primary)]">{visibleRows.filter((row) => getRowStatus(row.timecard) === 'approved').length}</p>
           </div>
           <div className="rounded-lg border border-[var(--border-color)] bg-[var(--bg-card-soft)] px-5 py-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Selected</p>
@@ -696,7 +761,7 @@ export const TimesheetPending = () => {
                   setWeekEnding('');
                   setSelectedClientId('');
                   setSelectedDepartmentId('');
-                  setSelectedStatuses(['no_exception', 'exception', 'approved', 'rejected']);
+                  setSelectedStatuses([...DEFAULT_STATUS_FILTERS]);
                 }}
               >
                 Clear
@@ -714,7 +779,7 @@ export const TimesheetPending = () => {
         emptyMessage="No timecard match the selected filters."
         rowKey={(row) => row.timecard.timecard_id}
         onRowClick={openEmployeeReview}
-        rowClassName={(row) => row.timecard.status === 'exception' ? 'bg-amber-50/70' : ''}
+        rowClassName={(row) => getRowStatus(row.timecard) === 'exception' ? 'bg-amber-50/70' : ''}
         pagination={{
           currentPage: safeCurrentPage,
           totalPages,
