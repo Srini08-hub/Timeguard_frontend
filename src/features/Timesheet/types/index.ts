@@ -40,6 +40,13 @@ export interface SourceInfo {
 
 export interface EmployeeRecord {
   employee_name: string;
+  extracted_employee_name?: string | null;
+  extracted_client_name?: string | null;
+  extracted_department_name?: string | null;
+  emp_id?: string | null;
+  assignment_id?: string | null;
+  employee_matching_score?: number | string | null;
+  matching_score?: number | string | null;
   department?: string | null;
   total_hours?: string | null;
   source?: SourceInfo[];

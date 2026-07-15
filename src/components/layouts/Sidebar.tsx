@@ -8,9 +8,8 @@ import {
   Settings,
   ShieldCheck,
   Sparkles,
-  X,
 } from 'lucide-react';
-import { Badge, Button } from '../ui';
+import { Badge } from '../ui';
 
 export interface SidebarNavItem {
   label: string;
@@ -21,8 +20,7 @@ export interface SidebarNavItem {
 }
 
 export interface SidebarProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen: boolean;
   activeItem?: string;
   onNavigate?: (href: string, label: string) => void;
   navItems?: SidebarNavItem[];
@@ -39,7 +37,6 @@ const defaultNavItems: SidebarNavItem[] = [
 
 export const Sidebar: React.FC<SidebarProps> = ({
   isOpen,
-  onClose,
   activeItem = 'Dashboard',
   onNavigate,
   navItems = defaultNavItems,
@@ -51,18 +48,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     if (onNavigate) {
       onNavigate(item.href, item.label);
     }
-    onClose();
   };
 
   return (
     <>
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-gray-900/35 backdrop-blur-sm transition-opacity lg:hidden"
-          onClick={onClose}
-        />
-      )}
-
       <aside
         className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-[var(--border-color)] bg-[var(--bg-sidebar)] text-[var(--text-secondary)] shadow-2xl shadow-gray-950/10 transition-all duration-300 ease-out lg:static lg:h-screen lg:translate-x-0 lg:shadow-none
           ${isOpen ? 'translate-x-0' : '-translate-x-full lg:w-20'}
@@ -83,15 +72,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           </div>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            aria-label="Close sidebar"
-            className="h-9 w-9 lg:hidden"
-          >
-            <X className="h-5 w-5" />
-          </Button>
         </div>
 
         {/* <div className={`px-4 pt-5 ${isExpanded ? 'block' : 'hidden lg:hidden'}`}>

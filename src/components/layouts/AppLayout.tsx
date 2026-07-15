@@ -25,10 +25,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   navitems,
   onNavigate,
 }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
-  const closeSidebar = () => setIsSidebarOpen(false);
 
 
 
@@ -36,8 +35,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
     <div className="flex h-screen w-full overflow-hidden bg-[var(--bg-main)] text-[var(--text-primary)]">
       {/* Responsive Sidebar component */}
       <Sidebar
-        isOpen={isSidebarOpen}
-        onClose={closeSidebar}
+        isOpen={isSidebarOpen}
         activeItem={activePageTitle}
         navItems={navitems}
         onNavigate={onNavigate}

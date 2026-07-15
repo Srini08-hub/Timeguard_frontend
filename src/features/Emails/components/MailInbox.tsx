@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ArrowUpRight,
   FileText,
@@ -40,6 +40,27 @@ const filterLabels: Record<MailFilter, string> = {
   all: 'All Mails',
   timesheet: 'Timesheet',
   'non-timesheet': 'Non-Timesheet',
+};
+
+const isMailFilter = (value: string | null): value is MailFilter => {
+  return value === 'all' || value === 'timesheet' || value === 'non-timesheet';
+};
+
+const isMailStatusFilter = (value: string | null): value is MailStatusFilter => {
+  return value === 'all' || value === 'processed' || value === 'failed';
+};
+
+const parseMailFilter = (value: string | null): MailFilter => {
+  return isMailFilter(value) ? value : 'all';
+};
+
+const parseMailStatusFilter = (value: string | null): MailStatusFilter => {
+  return isMailStatusFilter(value) ? value : 'all';
+};
+
+const parsePage = (value: string | null) => {
+  const page = Number(value);
+  return Number.isInteger(page) && page > 0 ? page : 1;
 };
 
 const statusLabels: Record<EmailStatus, string> = {
@@ -118,13 +139,14 @@ const sortByNewestReceived = (emails: TimesheetEmailResponse[]) => {
 };
 
 export const MailInbox = () => {
-  const [selectedFilter, setSelectedFilter] = useState<MailFilter>('all');
-  const [selectedStatus, setSelectedStatus] = useState<MailStatusFilter>('all');
-  const [receivedFrom, setReceivedFrom] = useState('');
-  const [receivedTo, setReceivedTo] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [selectedFilter, setSelectedFilter] = useState<MailFilter>(() => parseMailFilter(searchParams.get('filter')));
+  const [selectedStatus, setSelectedStatus] = useState<MailStatusFilter>(() => parseMailStatusFilter(searchParams.get('status')));
+  const [receivedFrom, setReceivedFrom] = useState(() => searchParams.get('from') ?? '');
+  const [receivedTo, setReceivedTo] = useState(() => searchParams.get('to') ?? '');
+  const [currentPage, setCurrentPage] = useState(() => parsePage(searchParams.get('page')));
 
   const allMailsQuery = useAllMails(selectedFilter === 'all');
   const timesheetQuery = useTimesheetMails(selectedFilter === 'timesheet');
@@ -173,6 +195,21 @@ export const MailInbox = () => {
     safeCurrentPage * MAILS_PER_PAGE,
   );
 
+  useEffect(() => {
+    const nextSearchParams = new URLSearchParams();
+    if (selectedFilter !== 'all') nextSearchParams.set('filter', selectedFilter);
+    if (selectedStatus !== 'all') nextSearchParams.set('status', selectedStatus);
+    if (receivedFrom) nextSearchParams.set('from', receivedFrom);
+    if (receivedTo) nextSearchParams.set('to', receivedTo);
+    if (currentPage > 1) nextSearchParams.set('page', String(currentPage));
+
+    const nextSearch = nextSearchParams.toString();
+    const currentSearch = location.search.startsWith('?') ? location.search.slice(1) : location.search;
+    if (nextSearch !== currentSearch) {
+      setSearchParams(nextSearchParams, { replace: true });
+    }
+  }, [currentPage, location.search, receivedFrom, receivedTo, selectedFilter, selectedStatus, setSearchParams]);
+
   const refetchVisibleEmails = () => {
     if (selectedFilter === 'timesheet') {
       timesheetQuery.refetch();
@@ -188,10 +225,19 @@ export const MailInbox = () => {
   };
 
   const openMail = (email: TimesheetEmailResponse) => {
+    const returnSearchParams = new URLSearchParams();
+    if (selectedFilter !== 'all') returnSearchParams.set('filter', selectedFilter);
+    if (selectedStatus !== 'all') returnSearchParams.set('status', selectedStatus);
+    if (receivedFrom) returnSearchParams.set('from', receivedFrom);
+    if (receivedTo) returnSearchParams.set('to', receivedTo);
+    if (safeCurrentPage > 1) returnSearchParams.set('page', String(safeCurrentPage));
+    const returnSearch = returnSearchParams.toString();
+
     navigate(email.email_id, {
       state: {
         email,
         filter: selectedFilter,
+        returnTo: location.pathname + (returnSearch ? '?' + returnSearch : ''),
       },
     });
   };

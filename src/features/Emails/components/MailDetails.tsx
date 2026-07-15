@@ -31,6 +31,7 @@ interface MailLocationState {
   status?: EmailStatus;
   category?: MailCategory;
   filter?: MailFilter;
+  returnTo?: string;
 }
 
 const STATUS_REFETCH_INTERVAL = 3000;
@@ -63,12 +64,26 @@ const attachmentStatusLabels: Record<AttachmentStatus, string> = {
   failed: 'Failed',
 };
 
-const getStatusVariant = (status: EmailStatus) => {
-  if (status === 'processed' || status === 'merged') return 'success';
-  if (status === 'failed' || status === 'not_processed') return 'danger';
-  if (status === 'extracted' || status === 'classified') return 'info';
-  if (status === 'received') return 'warning';
-  return 'neutral';
+const emailStatusVariants: Record<EmailStatus, 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'neutral'> = {
+  not_received: 'neutral',
+  received: 'success',
+  classified: 'success',
+  extracted: 'info',
+  merged: 'success',
+  processed: 'success',
+  not_processed: 'danger',
+  failed: 'danger',
+};
+
+const getStatusVariant = (status: EmailStatus) => emailStatusVariants[status] ?? 'neutral';
+
+const getStatusStepClasses = (status: EmailStatus, isActive: boolean) => {
+  const variant = getStatusVariant(status);
+  if (variant === 'success') return 'border-[var(--success-border)] bg-[var(--success-border)] text-white';
+  if (variant === 'danger') return 'border-red-600 bg-red-600 text-white';
+  if (variant === 'warning') return 'border-amber-500 bg-amber-500 text-white';
+  if (isActive && (variant === 'info' || variant === 'primary')) return 'border-[var(--primary)] bg-[var(--primary)] text-white shadow-sm shadow-blue-700/15';
+  return 'border-[var(--border-color)] bg-white text-[var(--text-muted)]';
 };
 
 const getAttachmentStatusVariant = (status: AttachmentStatus) => {
@@ -119,6 +134,7 @@ export const MailDetails = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const routeState = location.state as MailLocationState | null;
+  const returnTo = routeState?.returnTo || '/reviewer/emails';
   const routeStateEmail = routeState?.email;
   const stateEmail = routeStateEmail?.email_id === emailId ? routeStateEmail : undefined;
 
@@ -243,7 +259,7 @@ export const MailDetails = () => {
         <p className="mt-2 text-sm text-[var(--danger-text)]">
           {lookupError?.message || 'The selected mail could not be found.'}
         </p>
-        <Button className="mt-5" variant="outline" onClick={() => navigate('/reviewer/emails')}>
+        <Button className="mt-5" variant="outline" onClick={() => navigate(returnTo)}>
           Back to Mail
         </Button>
       </div>
@@ -258,7 +274,7 @@ export const MailDetails = () => {
           variant="ghost"
           size="sm"
           icon={<ArrowLeft className="h-4 w-4" />}
-          onClick={() => navigate('/reviewer/emails')}
+          onClick={() => navigate(returnTo)}
         >
           Mail
         </Button>
@@ -320,11 +336,9 @@ export const MailDetails = () => {
                   <div
                     className={
                       'flex h-10 w-10 shrink-0 items-center justify-center rounded-full border text-sm font-semibold transition-colors ' +
-                      (isComplete
-                        ? 'border-[var(--success-border)] bg-[var(--success-border)] text-white'
-                        : isActive
-                          ? 'border-[var(--primary)] bg-[var(--primary)] text-white shadow-sm shadow-blue-700/15'
-                          : 'border-[var(--border-color)] bg-white text-[var(--text-muted)]')
+                      (isComplete || isActive
+                        ? getStatusStepClasses(step, isActive)
+                        : 'border-[var(--border-color)] bg-white text-[var(--text-muted)]')
                     }
                   >
                     {isComplete ? <Check className="h-4 w-4" /> : index + 1}
@@ -346,7 +360,7 @@ export const MailDetails = () => {
                     <div
                       className={
                         'hidden h-px flex-1 lg:block ' +
-                        (isComplete ? 'bg-emerald-500' : 'bg-[var(--border-color)]')
+                        (isComplete ? 'bg-[var(--success-border)]' : 'bg-[var(--border-color)]')
                       }
                     />
                   )}

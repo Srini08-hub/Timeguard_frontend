@@ -24,6 +24,9 @@ import { Table, type TableColumn } from '../../../components/ui/Table';
 import { useToast } from '../../../hooks/useToast';
 import { useAttachmentInfo } from '../../Emails/hooks/useAttachmentInfo';
 import type { AttachmentInfo } from '../../Emails/types';
+import { useClient } from '../../Client/hooks/useClients';
+import { useDepartmentsByClient } from '../../Department/hooks/useDepartments';
+import { useEmployee } from '../../Employee/hooks/useEmployees';
 import { useClientRule } from '../../ClientRules/hooks/useClientRules';
 import type { ClientRuleNumber } from '../../ClientRules/types';
 import {
@@ -110,6 +113,17 @@ const formatStatus = (status: string) => {
   return status.replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
 };
 
+const formatDetailValue = (value: string | null | undefined) => {
+  const trimmedValue = value?.trim();
+  return trimmedValue || 'Not available';
+};
+
+const formatMatchingScore = (value: number | string | null | undefined) => {
+  if (value === null || value === undefined || value === '') return 'Not available';
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) ? numericValue.toFixed(2) + '%' : String(value);
+};
+
 const getStatusVariant = (status: string): NonNullable<BadgeProps['variant']> => {
   const normalizedStatus = normalizeStatusValue(status);
   if (normalizedStatus === 'no_exception' || normalizedStatus === 'clean' || normalizedStatus === 'approved') return 'success';
@@ -117,6 +131,18 @@ const getStatusVariant = (status: string): NonNullable<BadgeProps['variant']> =>
   if (normalizedStatus === 'rejected') return 'danger';
   if (normalizedStatus === 'pending') return 'warning';
   return 'neutral';
+};
+
+const isFinalTimecardStatus = (status: string | null | undefined) => {
+  const normalizedStatus = normalizeStatusValue(status);
+  return normalizedStatus === 'approved' || normalizedStatus === 'rejected';
+};
+
+const hasUnresolvedExceptions = (timecard: TimecardEntry) => {
+  if ((timecard.exceptions ?? []).length > 0) {
+    return timecard.exceptions.some((exception) => !exception.resolved);
+  }
+  return normalizeStatusValue(timecard.status) === 'exception';
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> => {
@@ -264,20 +290,42 @@ export const EmployeeTimesheetReview = () => {
 
   const attachmentInfoQuery = useAttachmentInfo(timesheet?.email_id);
   const ruleQuery = useClientRule(timecard?.rule_id ?? undefined);
+  const employeeQuery = useEmployee(timecard?.emp_id ?? undefined);
 
   const employeeRecord = useMemo(() => {
-    return getEmployeeRecords(timesheet?.payload).find(
-      (employee) => normalize(employee.employee_name) === normalize(timecard?.employee_name),
-    );
-  }, [timecard?.employee_name, timesheet?.payload]);
+    const employeeRecords = getEmployeeRecords(timesheet?.payload);
+    return employeeRecords.find((employee) => {
+      if (timecard?.emp_id && employee.emp_id === timecard.emp_id) return true;
+      if (timecard?.assignment_id && employee.assignment_id === timecard.assignment_id) return true;
+      return normalize(employee.employee_name) === normalize(timecard?.employee_name)
+        || normalize(employee.extracted_employee_name) === normalize(timecard?.employee_name);
+    });
+  }, [timecard?.assignment_id, timecard?.employee_name, timecard?.emp_id, timesheet?.payload]);
 
   const sources = useMemo(() => {
     return buildSourceViews(employeeRecord, attachmentInfoQuery.data ?? []);
   }, [attachmentInfoQuery.data, employeeRecord]);
 
+  const actualClientId = employeeQuery.data?.clientId ?? ruleQuery.data?.client_id ?? null;
+  const actualDepartmentId = employeeQuery.data?.departmentId ?? ruleQuery.data?.department_id ?? null;
+  const actualClientQuery = useClient(actualClientId ?? undefined);
+  const actualDepartmentsQuery = useDepartmentsByClient(actualClientId ?? '');
+  const actualDepartment = (actualDepartmentsQuery.data ?? []).find((department) => department.department_id === actualDepartmentId);
+  const extractedEmployeeName = employeeRecord?.extracted_employee_name || employeeRecord?.employee_name || timecard?.employee_name || null;
+  const actualEmployeeName = employeeRecord?.employee_name || timecard?.employee_name || employeeQuery.data?.name || null;
+  const employeeMatchingScore = employeeRecord?.employee_matching_score ?? employeeRecord?.matching_score ?? null;
+  const extractedClientName = employeeRecord?.extracted_client_name || timesheet?.client_name || null;
+  const extractedDepartmentName = employeeRecord?.extracted_department_name || employeeRecord?.department || null;
+  const actualClientName = actualClientQuery.data?.client_name || null;
+  const actualDepartmentName = actualDepartment?.department_name || null;
+  const isActualAssignmentLoading = employeeQuery.isLoading || actualClientQuery.isLoading || actualDepartmentsQuery.isLoading;
+
   const records = employeeRecord?.timesheet_records ?? [];
   const employeeTotalHours = stringifyValue(employeeRecord?.total_hours);
   const hasExceptions = Boolean(timecard?.exceptions?.length);
+  const hasOpenExceptions = timecard ? hasUnresolvedExceptions(timecard) : false;
+  const isActionFinal = timecard ? isFinalTimecardStatus(timecard.status) : false;
+  const isReviewActionPending = isApproving || isRejecting;
   const isLoading = !timecard && (timecardQuery.isLoading || underReviewQuery.isLoading || processedQuery.isLoading);
   const error = timecardQuery.error || underReviewQuery.error || processedQuery.error;
 
@@ -335,7 +383,7 @@ export const EmployeeTimesheetReview = () => {
   };
 
   const approveCurrent = () => {
-    if (!timecard) return;
+    if (!timecard || isActionFinal || hasOpenExceptions) return;
     approveTimecard(timecard.timecard_id, {
       onSuccess: (updated) => {
         setLocalTimecard(updated);
@@ -346,7 +394,7 @@ export const EmployeeTimesheetReview = () => {
   };
 
   const rejectCurrent = () => {
-    if (!timecard) return;
+    if (!timecard || isActionFinal) return;
     rejectTimecard(timecard.timecard_id, {
       onSuccess: (updated) => {
         setLocalTimecard(updated);
@@ -402,7 +450,7 @@ export const EmployeeTimesheetReview = () => {
             size="sm"
             icon={<CheckCircle2 className="h-4 w-4" />}
             isLoading={isApproving}
-            disabled={isRejecting}
+            disabled={isActionFinal || hasOpenExceptions || isReviewActionPending}
             onClick={approveCurrent}
           >
             Approve
@@ -413,7 +461,7 @@ export const EmployeeTimesheetReview = () => {
             size="sm"
             icon={<XCircle className="h-4 w-4" />}
             isLoading={isRejecting}
-            disabled={isApproving}
+            disabled={isActionFinal || isReviewActionPending}
             onClick={rejectCurrent}
           >
             Reject
@@ -538,9 +586,42 @@ export const EmployeeTimesheetReview = () => {
               <Badge variant="info">{records.length} rows</Badge>
             </div>
           </div>
-          <div className="rounded-lg border border-[var(--border-color)] bg-white px-5 py-4 shadow-sm shadow-gray-950/5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Employee total hours</p>
-            <p className="mt-1 text-xl font-semibold text-[var(--text-primary)]">{employeeTotalHours}</p>
+          <div className="grid gap-4 xl:grid-cols-[1.2fr_1fr]">
+            <div className="rounded-lg border border-[var(--border-color)] bg-white px-5 py-4 shadow-sm shadow-gray-950/5">
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Extracted employee</p>
+                  <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">{formatDetailValue(extractedEmployeeName)}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Extracted client</p>
+                  <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">{formatDetailValue(extractedClientName)}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Extracted department</p>
+                  <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">{formatDetailValue(extractedDepartmentName)}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Actual employee</p>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-semibold text-[var(--text-primary)]">{formatDetailValue(actualEmployeeName)}</p>
+                    <Badge variant="info">Match {formatMatchingScore(employeeMatchingScore)}</Badge>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Actual assigned client</p>
+                  <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">{isActualAssignmentLoading ? 'Loading...' : formatDetailValue(actualClientName)}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Actual assigned department</p>
+                  <p className="mt-1 text-sm font-semibold text-[var(--text-primary)]">{isActualAssignmentLoading ? 'Loading...' : formatDetailValue(actualDepartmentName)}</p>
+                </div>
+              </div>
+            </div>
+            <div className="rounded-lg border border-[var(--border-color)] bg-white px-5 py-4 shadow-sm shadow-gray-950/5">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">Employee total hours</p>
+              <p className="mt-1 text-xl font-semibold text-[var(--text-primary)]">{employeeTotalHours}</p>
+            </div>
           </div>
 
           <Table
@@ -609,7 +690,11 @@ export const EmployeeTimesheetReview = () => {
                 variant="primary"
                 size="sm"
                 icon={<Edit3 className="h-4 w-4" />}
-                onClick={() => setIsEditorOpen(true)}
+                disabled={!hasOpenExceptions || isActionFinal || isResolving}
+                title={hasOpenExceptions ? 'Edit timecard' : 'All exceptions resolved'}
+                onClick={() => {
+                  if (hasOpenExceptions && !isActionFinal) setIsEditorOpen(true);
+                }}
               >
                 Edit Timecard
               </Button>

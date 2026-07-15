@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type KeyboardEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { useQueries } from '@tanstack/react-query';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import {
@@ -194,6 +194,18 @@ const getRowStatus = (timecard: TimecardEntry): StatusFilter | null => {
   return null;
 };
 
+const isFinalTimecardStatus = (status: string | null | undefined) => {
+  const normalizedStatus = normalizeStatusValue(status);
+  return normalizedStatus === 'approved' || normalizedStatus === 'rejected';
+};
+
+const hasUnresolvedExceptions = (timecard: TimecardEntry) => {
+  if ((timecard.exceptions ?? []).length > 0) {
+    return timecard.exceptions.some((exception) => !exception.resolved);
+  }
+  return normalizeStatusValue(timecard.status) === 'exception';
+};
+
 const SearchableCombobox = ({
   disabled = false,
   label,
@@ -288,7 +300,9 @@ export const TimesheetPending = () => {
   const [selectedStatuses, setSelectedStatuses] = useState<StatusFilter[]>(() => parseStatusFilters(searchParams.get('statuses')));
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [pendingAction, setPendingAction] = useState<PendingTimecardAction>(null);
+  const [finalizedActionIds, setFinalizedActionIds] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(() => parsePage(searchParams.get('page')));
+  const hasMounted = useRef(false);
 
   const underReviewQuery = useUnderReviewTimesheets();
   const processedQuery = useProcessedTimesheets();
@@ -387,7 +401,20 @@ export const TimesheetPending = () => {
   );
 
   const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
-  const allVisibleSelected = paginatedRows.length > 0 && paginatedRows.every((row) => selectedSet.has(row.timecard.timecard_id));
+  const finalizedActionSet = useMemo(() => new Set(finalizedActionIds), [finalizedActionIds]);
+  const isTimecardFinal = (timecard: TimecardEntry) => isFinalTimecardStatus(timecard.status) || finalizedActionSet.has(timecard.timecard_id);
+  const selectablePaginatedRows = paginatedRows.filter((row) => !isTimecardFinal(row.timecard));
+  const allVisibleSelected = selectablePaginatedRows.length > 0 && selectablePaginatedRows.every((row) => selectedSet.has(row.timecard.timecard_id));
+  const selectedRows = useMemo(() => {
+    const rowsById = new Map(rows.map((row) => [row.timecard.timecard_id, row]));
+    return selectedIds.map((timecardId) => rowsById.get(timecardId)).filter((row): row is EmployeeReviewRow => Boolean(row));
+  }, [rows, selectedIds]);
+  const selectedApprovableIds = selectedRows
+    .filter((row) => !isTimecardFinal(row.timecard) && !hasUnresolvedExceptions(row.timecard))
+    .map((row) => row.timecard.timecard_id);
+  const selectedRejectableIds = selectedRows
+    .filter((row) => !isTimecardFinal(row.timecard))
+    .map((row) => row.timecard.timecard_id);
   const isLoading = underReviewQuery.isLoading || processedQuery.isLoading || timecardQueries.some((query) => query.isLoading);
   const isRefetching = underReviewQuery.isRefetching || processedQuery.isRefetching || timecardQueries.some((query) => query.isRefetching);
   const error = underReviewQuery.error || processedQuery.error || timecardQueries.find((query) => query.error)?.error || approvedQuery.error || rejectedQuery.error;
@@ -410,17 +437,25 @@ export const TimesheetPending = () => {
   }, [currentPage, isFilterOpen, location.search, selectedClientId, selectedDepartmentId, selectedStatuses, setSearchParams, weekEnding]);
 
   useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      return;
+    }
     setCurrentPage(1);
   }, [selectedClientId, selectedDepartmentId, selectedStatuses, weekEnding]);
 
   useEffect(() => {
-    const visibleIds = new Set(visibleRows.map((row) => row.timecard.timecard_id));
+    const visibleIds = new Set(
+      visibleRows
+        .filter((row) => !isTimecardFinal(row.timecard))
+        .map((row) => row.timecard.timecard_id),
+    );
     setSelectedIds((current) => {
       const nextSelectedIds = current.filter((timecardId) => visibleIds.has(timecardId));
       if (nextSelectedIds.length === current.length) return current;
       return nextSelectedIds;
     });
-  }, [visibleRows]);
+  }, [finalizedActionSet, visibleRows]);
 
   const refreshQueues = () => {
     underReviewQuery.refetch();
@@ -439,6 +474,8 @@ export const TimesheetPending = () => {
   };
 
   const toggleOne = (timecardId: string) => {
+    const row = rows.find((item) => item.timecard.timecard_id === timecardId);
+    if (row && isTimecardFinal(row.timecard)) return;
     setSelectedIds((current) => (
       current.includes(timecardId)
         ? current.filter((item) => item !== timecardId)
@@ -447,7 +484,7 @@ export const TimesheetPending = () => {
   };
 
   const toggleAllVisible = () => {
-    const pageIds = paginatedRows.map((row) => row.timecard.timecard_id);
+    const pageIds = selectablePaginatedRows.map((row) => row.timecard.timecard_id);
     setSelectedIds((current) => {
       if (allVisibleSelected) return current.filter((timecardId) => !pageIds.includes(timecardId));
       return Array.from(new Set([...current, ...pageIds]));
@@ -455,9 +492,13 @@ export const TimesheetPending = () => {
   };
 
   const approveSelected = () => {
-    if (selectedIds.length === 0) return;
-    approveMany(selectedIds, {
-      onSuccess: () => {
+    if (selectedApprovableIds.length === 0) return;
+    approveMany(selectedApprovableIds, {
+      onSuccess: (updatedTimecards) => {
+        setFinalizedActionIds((current) => Array.from(new Set([
+          ...current,
+          ...updatedTimecards.map((timecard) => timecard.timecard_id),
+        ])));
         toast.success('Selected employees were approved.', 'Approved');
         setSelectedIds([]);
       },
@@ -466,9 +507,13 @@ export const TimesheetPending = () => {
   };
 
   const rejectSelected = () => {
-    if (selectedIds.length === 0) return;
-    rejectMany(selectedIds, {
-      onSuccess: () => {
+    if (selectedRejectableIds.length === 0) return;
+    rejectMany(selectedRejectableIds, {
+      onSuccess: (updatedTimecards) => {
+        setFinalizedActionIds((current) => Array.from(new Set([
+          ...current,
+          ...updatedTimecards.map((timecard) => timecard.timecard_id),
+        ])));
         toast.success('Selected employees were rejected.', 'Rejected');
         setSelectedIds([]);
       },
@@ -477,9 +522,13 @@ export const TimesheetPending = () => {
   };
 
   const approveOne = (timecard: TimecardEntry) => {
+    if (isTimecardFinal(timecard) || hasUnresolvedExceptions(timecard)) return;
     setPendingAction({ timecardId: timecard.timecard_id, action: 'approve' });
     approveTimecard(timecard.timecard_id, {
-      onSuccess: () => toast.success('Employee timecard approved.', 'Approved'),
+      onSuccess: (updatedTimecard) => {
+        setFinalizedActionIds((current) => Array.from(new Set([...current, updatedTimecard.timecard_id])));
+        toast.success('Employee timecard approved.', 'Approved');
+      },
       onError: (requestError) => toast.error(requestError.message, 'Approve failed'),
       onSettled: () => setPendingAction((current) => (
         current?.timecardId === timecard.timecard_id && current.action === 'approve' ? null : current
@@ -488,9 +537,13 @@ export const TimesheetPending = () => {
   };
 
   const rejectOne = (timecard: TimecardEntry) => {
+    if (isTimecardFinal(timecard)) return;
     setPendingAction({ timecardId: timecard.timecard_id, action: 'reject' });
     rejectTimecard(timecard.timecard_id, {
-      onSuccess: () => toast.success('Employee timecard rejected.', 'Rejected'),
+      onSuccess: (updatedTimecard) => {
+        setFinalizedActionIds((current) => Array.from(new Set([...current, updatedTimecard.timecard_id])));
+        toast.success('Employee timecard rejected.', 'Rejected');
+      },
       onError: (requestError) => toast.error(requestError.message, 'Reject failed'),
       onSettled: () => setPendingAction((current) => (
         current?.timecardId === timecard.timecard_id && current.action === 'reject' ? null : current
@@ -499,9 +552,17 @@ export const TimesheetPending = () => {
   };
 
   const openEmployeeReview = (row: EmployeeReviewRow) => {
+    const returnSearchParams = new URLSearchParams(location.search);
+    if (safeCurrentPage > 1) {
+      returnSearchParams.set('page', String(safeCurrentPage));
+    } else {
+      returnSearchParams.delete('page');
+    }
+    const returnSearch = returnSearchParams.toString();
+
     navigate('employees/' + row.timecard.timecard_id, {
       state: {
-        returnTo: location.pathname + location.search,
+        returnTo: location.pathname + (returnSearch ? '?' + returnSearch : ''),
         timecard: row.timecard,
         timesheet: row.timesheet,
       },
@@ -528,6 +589,7 @@ export const TimesheetPending = () => {
         <input
           type="checkbox"
           checked={selectedSet.has(row.timecard.timecard_id)}
+          disabled={isTimecardFinal(row.timecard)}
           onChange={() => toggleOne(row.timecard.timecard_id)}
           onClick={(event) => event.stopPropagation()}
           aria-label={'Select ' + (row.timecard.employee_name || 'employee')}
@@ -591,6 +653,9 @@ export const TimesheetPending = () => {
       accessor: (row) => {
         const isApprovingThis = pendingAction?.timecardId === row.timecard.timecard_id && pendingAction.action === 'approve';
         const isRejectingThis = pendingAction?.timecardId === row.timecard.timecard_id && pendingAction.action === 'reject';
+        const isActionPendingThis = isApprovingThis || isRejectingThis;
+        const isFinal = isTimecardFinal(row.timecard);
+        const hasOpenExceptions = hasUnresolvedExceptions(row.timecard);
 
         return (
           <div className="flex justify-end gap-2" onClick={(event) => event.stopPropagation()}>
@@ -599,9 +664,9 @@ export const TimesheetPending = () => {
               variant="ghost"
               size="icon"
               aria-label="Approve employee timecard"
-              title="Approve"
+              title={hasOpenExceptions ? 'Resolve exceptions before approving' : 'Approve'}
               className="h-10 w-10 rounded-full border border-emerald-200 bg-emerald-50 text-[var(--success-text)] shadow-sm hover:border-emerald-300 hover:bg-[var(--success-bg)] hover:text-[var(--success-text)]"
-              disabled={isApprovingThis || isApprovingMany}
+              disabled={isFinal || hasOpenExceptions || isActionPendingThis || isApprovingMany}
               isLoading={isApprovingThis}
               onClick={() => approveOne(row.timecard)}
               onKeyDown={stopActionKeydown}
@@ -615,7 +680,7 @@ export const TimesheetPending = () => {
               aria-label="Reject employee timecard"
               title="Reject"
               className="h-10 w-10 rounded-full border border-red-200 bg-red-50 text-[var(--danger-text)] shadow-sm hover:border-red-300 hover:bg-[var(--danger-bg)] hover:text-[var(--danger-text)]"
-              disabled={isRejectingThis || isRejectingMany}
+              disabled={isFinal || isActionPendingThis || isRejectingMany}
               isLoading={isRejectingThis}
               onClick={() => rejectOne(row.timecard)}
               onKeyDown={stopActionKeydown}
@@ -668,21 +733,21 @@ export const TimesheetPending = () => {
               type="button"
               variant="primary"
               icon={<CheckCircle2 className="h-4 w-4" />}
-              disabled={selectedIds.length === 0 || isRejectingMany}
+              disabled={selectedApprovableIds.length === 0 || isRejectingMany}
               isLoading={isApprovingMany}
               onClick={approveSelected}
             >
-              Bulk Approve ({selectedIds.length})
+              Bulk Approve ({selectedApprovableIds.length})
             </Button>
             <Button
               type="button"
               variant="danger"
               icon={<XCircle className="h-4 w-4" />}
-              disabled={selectedIds.length === 0 || isApprovingMany}
+              disabled={selectedRejectableIds.length === 0 || isApprovingMany}
               isLoading={isRejectingMany}
               onClick={rejectSelected}
             >
-              Bulk Reject ({selectedIds.length})
+              Bulk Reject ({selectedRejectableIds.length})
             </Button>
           </div>
         </div>
