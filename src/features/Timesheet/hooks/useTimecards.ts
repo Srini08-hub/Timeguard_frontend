@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import timecardService from '../services/timecardService';
+import { timesheetQueryKeys } from './useTimesheets';
 import type { TimecardEntry, TimecardUpdatePayload } from '../types';
 
 export const timecardQueryKeys = {
@@ -93,6 +94,8 @@ export const useRejectTimecard = () => {
       queryClient.invalidateQueries({ queryKey: timecardQueryKeys.all });
       queryClient.invalidateQueries({ queryKey: timecardQueryKeys.byTimesheet(timecard.timesheet_id) });
       queryClient.invalidateQueries({ queryKey: timecardQueryKeys.detail(timecard.timecard_id) });
+      queryClient.invalidateQueries({ queryKey: timesheetQueryKeys.underReview });
+      queryClient.invalidateQueries({ queryKey: timesheetQueryKeys.processed });
     },
   });
 };
@@ -109,7 +112,10 @@ export const useResolveTimecard = () => {
       queryClient.invalidateQueries({ queryKey: timecardQueryKeys.all });
       queryClient.invalidateQueries({ queryKey: timecardQueryKeys.byTimesheet(timecard.timesheet_id) });
       queryClient.invalidateQueries({ queryKey: timecardQueryKeys.detail(timecard.timecard_id) });
+      queryClient.invalidateQueries({ queryKey: timesheetQueryKeys.underReview });
+      queryClient.invalidateQueries({ queryKey: timesheetQueryKeys.processed });
     },
   });
 };
+
 

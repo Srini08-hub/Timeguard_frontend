@@ -658,35 +658,37 @@ export const TimesheetPending = () => {
         const hasOpenExceptions = hasUnresolvedExceptions(row.timecard);
 
         return (
-          <div className="flex justify-end gap-2" onClick={(event) => event.stopPropagation()}>
-            <Button
+          <div className="flex justify-end gap-3" onClick={(event) => event.stopPropagation()}>
+            <button
               type="button"
-              variant="ghost"
-              size="icon"
               aria-label="Approve employee timecard"
               title={hasOpenExceptions ? 'Resolve exceptions before approving' : 'Approve'}
-              className="h-10 w-10 rounded-full border border-emerald-200 bg-emerald-50 text-[var(--success-text)] shadow-sm hover:border-emerald-300 hover:bg-[var(--success-bg)] hover:text-[var(--success-text)]"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--success-text)] transition-colors hover:bg-[var(--success-bg)] focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:text-[var(--text-muted)] disabled:opacity-45"
               disabled={isFinal || hasOpenExceptions || isActionPendingThis || isApprovingMany}
-              isLoading={isApprovingThis}
               onClick={() => approveOne(row.timecard)}
               onKeyDown={stopActionKeydown}
             >
-              <CheckCircle2 className="h-5 w-5 stroke-[2.75]" />
-            </Button>
-            <Button
+              {isApprovingThis ? (
+                <RefreshCw className="h-5 w-5 animate-spin" />
+              ) : (
+                <CheckCircle2 className="h-5 w-5 stroke-[2.5]" />
+              )}
+            </button>
+            <button
               type="button"
-              variant="ghost"
-              size="icon"
               aria-label="Reject employee timecard"
               title="Reject"
-              className="h-10 w-10 rounded-full border border-red-200 bg-red-50 text-[var(--danger-text)] shadow-sm hover:border-red-300 hover:bg-[var(--danger-bg)] hover:text-[var(--danger-text)]"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--danger-text)] transition-colors hover:bg-[var(--danger-bg)] focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:text-[var(--text-muted)] disabled:opacity-45"
               disabled={isFinal || isActionPendingThis || isRejectingMany}
-              isLoading={isRejectingThis}
               onClick={() => rejectOne(row.timecard)}
               onKeyDown={stopActionKeydown}
             >
-              <XCircle className="h-5 w-5 stroke-[2.75]" />
-            </Button>
+              {isRejectingThis ? (
+                <RefreshCw className="h-5 w-5 animate-spin" />
+              ) : (
+                <XCircle className="h-5 w-5 stroke-[2.5]" />
+              )}
+            </button>
           </div>
         );
       },
@@ -854,6 +856,7 @@ export const TimesheetPending = () => {
     </div>
   );
 };
+
 
 
 

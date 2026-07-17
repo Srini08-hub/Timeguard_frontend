@@ -336,9 +336,11 @@ export const MailDetails = () => {
                   <div
                     className={
                       'flex h-10 w-10 shrink-0 items-center justify-center rounded-full border text-sm font-semibold transition-colors ' +
-                      (isComplete || isActive
-                        ? getStatusStepClasses(step, isActive)
-                        : 'border-[var(--border-color)] bg-white text-[var(--text-muted)]')
+                      (isComplete
+                        ? 'border-[var(--success-border)] bg-[var(--success-border)] text-white'
+                        : isActive
+                          ? getStatusStepClasses(step, isActive)
+                          : 'border-[var(--border-color)] bg-white text-[var(--text-muted)]')
                     }
                   >
                     {isComplete ? <Check className="h-4 w-4" /> : index + 1}
