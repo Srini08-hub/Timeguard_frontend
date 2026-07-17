@@ -6,6 +6,7 @@ import { LoginPage } from '../features/auth/pages/LoginPage';
 import Admin from '../features/Dashboard/pages/Admin';
 import OpsAdmin from '../features/Dashboard/pages/OpsAdmin';
 import Reviewer from '../features/Dashboard/pages/Reviewer';
+import { ReviewerAssignments } from '../features/Dashboard/pages/ReviewerAssignments';
 import { User } from '../features/User/components/Users';
 import { TimesheetPending } from '../features/Timesheet/components/TimesheetPending';
 // import { TimesheetDetails } from '../features/Timesheet/components/TimesheetDetails';
@@ -70,6 +71,7 @@ const AppRoutes: React.FC = () => {
           <Route path="timesheets/employees/:timecardId" element={<EmployeeTimesheetReview />} />
           {/* <Route path="timesheets/:timesheetId" element={<TimesheetDetails />} /> */}
           <Route path="timecards" element={<ReviewerTimecards />} />
+          <Route path="assignments" element={<ReviewerAssignments />} />
           {/* <Route path="timecards/:timecardId/exception" element={<ExceptionDetail />} /> */}
           <Route path="timesheets-pending" element={<Navigate to="/reviewer/timesheets" replace />} />
           <Route path="emails" element={<MailInbox />} />
@@ -85,6 +87,3 @@ const AppRoutes: React.FC = () => {
 };
 
 export default AppRoutes;
-
-
-

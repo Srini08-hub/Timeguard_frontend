@@ -87,6 +87,50 @@ const formatDate = (value: string | null | undefined) => {
   }).format(parsed);
 };
 
+const formatDateInputDate = (parsed: Date) => {
+  const year = parsed.getFullYear();
+  const month = String(parsed.getMonth() + 1).padStart(2, '0');
+  const day = String(parsed.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const parseDateInputValue = (value: string) => {
+  const [year, month, day] = value.slice(0, 10).split('-').map(Number);
+  if (!year || !month || !day) return null;
+
+  const parsed = new Date(year, month - 1, day);
+  if (
+    parsed.getFullYear() !== year
+    || parsed.getMonth() !== month - 1
+    || parsed.getDate() !== day
+  ) {
+    return null;
+  }
+
+  return parsed;
+};
+
+const toDateInputValue = (value: string | null | undefined) => {
+  if (!value) return '';
+  const inputDate = parseDateInputValue(value);
+  if (inputDate) return formatDateInputDate(inputDate);
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value.slice(0, 10);
+  return formatDateInputDate(parsed);
+};
+
+const toSundayWeekEndingInputValue = (value: string) => {
+  if (!value) return '';
+
+  const parsed = parseDateInputValue(value);
+  if (!parsed) return value;
+
+  const daysUntilSunday = (7 - parsed.getDay()) % 7;
+  parsed.setDate(parsed.getDate() + daysUntilSunday);
+  return formatDateInputDate(parsed);
+};
+
 const formatDateTime = (value: string | null | undefined) => {
   if (!value) return 'Not available';
   const parsed = new Date(value);
@@ -105,6 +149,17 @@ const formatHours = (value: number | string | null | undefined) => {
   if (value === null || value === undefined || value === '') return '0.00';
   const numericValue = Number(value);
   return Number.isFinite(numericValue) ? numericValue.toFixed(2) : String(value);
+};
+
+const toHoursInputValue = (value: number | string | null | undefined) => {
+  if (value === null || value === undefined || value === '') return '';
+  return String(value);
+};
+
+const parseHoursInput = (value: string) => {
+  if (!value.trim()) return null;
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) && numericValue >= 0 ? numericValue : null;
 };
 
 const formatStatus = (status: string) => {
@@ -136,6 +191,18 @@ const getStatusVariant = (status: string): NonNullable<BadgeProps['variant']> =>
 const isFinalTimecardStatus = (status: string | null | undefined) => {
   const normalizedStatus = normalizeStatusValue(status);
   return normalizedStatus === 'approved' || normalizedStatus === 'rejected';
+};
+
+const MATCHING_EXCEPTION_TYPES = new Set([
+  'missing_client',
+  'missing_week_ending',
+  'missing_department',
+  'missing_employee_id',
+]);
+
+
+const isMatchingPrerequisiteException = (exception: TimecardException) => {
+  return MATCHING_EXCEPTION_TYPES.has(normalizeStatusValue(exception.exception_type));
 };
 
 const hasUnresolvedExceptions = (timecard: TimecardEntry) => {
@@ -260,9 +327,13 @@ export const EmployeeTimesheetReview = () => {
   const [localTimecard, setLocalTimecard] = useState<TimecardEntry | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [employeeName, setEmployeeName] = useState('');
+  const [clientName, setClientName] = useState('');
+  const [departmentName, setDepartmentName] = useState('');
+  const [weekEnding, setWeekEnding] = useState('');
   const [regHours, setRegHours] = useState('');
   const [otHours, setOtHours] = useState('');
   const [dtHours, setDtHours] = useState('');
+
   const [reviewComment, setReviewComment] = useState('');
   const [formError, setFormError] = useState('');
   const routeState = location.state as EmployeeReviewLocationState | null;
@@ -284,9 +355,10 @@ export const EmployeeTimesheetReview = () => {
     return [...(underReviewQuery.data ?? []), ...(processedQuery.data ?? [])];
   }, [processedQuery.data, underReviewQuery.data]);
 
-  const timesheet = stateTimesheet?.timesheet_id === timecard?.timesheet_id
-    ? stateTimesheet
-    : lookupTimesheets.find((item) => item.timesheet_id === timecard?.timesheet_id);
+  const queriedTimesheet = lookupTimesheets.find((item) => item.timesheet_id === timecard?.timesheet_id);
+  const timesheet = queriedTimesheet ?? (
+    stateTimesheet?.timesheet_id === timecard?.timesheet_id ? stateTimesheet : undefined
+  );
 
   const attachmentInfoQuery = useAttachmentInfo(timesheet?.email_id);
   const ruleQuery = useClientRule(timecard?.rule_id ?? undefined);
@@ -312,7 +384,7 @@ export const EmployeeTimesheetReview = () => {
   const actualDepartmentsQuery = useDepartmentsByClient(actualClientId ?? '');
   const actualDepartment = (actualDepartmentsQuery.data ?? []).find((department) => department.department_id === actualDepartmentId);
   const extractedEmployeeName = employeeRecord?.extracted_employee_name || employeeRecord?.employee_name || timecard?.employee_name || null;
-  const actualEmployeeName = employeeRecord?.employee_name || timecard?.employee_name || employeeQuery.data?.name || null;
+  const actualEmployeeName = timecard?.emp_id ? (employeeRecord?.employee_name || timecard?.employee_name || employeeQuery.data?.name || null) : null;
   const employeeMatchingScore = employeeRecord?.employee_matching_score ?? employeeRecord?.matching_score ?? null;
   const extractedClientName = employeeRecord?.extracted_client_name || timesheet?.client_name || null;
   const extractedDepartmentName = employeeRecord?.extracted_department_name || employeeRecord?.department || null;
@@ -323,6 +395,23 @@ export const EmployeeTimesheetReview = () => {
   const records = employeeRecord?.timesheet_records ?? [];
   const employeeTotalHours = stringifyValue(employeeRecord?.total_hours);
   const hasExceptions = Boolean(timecard?.exceptions?.length);
+  const openExceptionTypes = useMemo(() => {
+    return new Set(
+      (timecard?.exceptions ?? [])
+        .filter((exception) => !exception.resolved)
+        .map((exception) => normalizeStatusValue(exception.exception_type)),
+    );
+  }, [timecard?.exceptions]);
+  const requiresClientCorrection = openExceptionTypes.has('missing_client');
+  const requiresDepartmentCorrection = openExceptionTypes.has('missing_department') || openExceptionTypes.has('missing_client');
+  const requiresWeekEndingCorrection = openExceptionTypes.has('missing_week_ending');
+  const requiresEmployeeCorrection = openExceptionTypes.has('missing_employee_id');
+  const requiresHoursCorrection = openExceptionTypes.has('low_confidence');
+  const showEmployeeNameCorrection = requiresEmployeeCorrection || requiresClientCorrection;
+  const hasMatchingPrerequisiteException = Boolean(
+    timecard?.exceptions?.some((exception) => !exception.resolved && isMatchingPrerequisiteException(exception)),
+  );
+
   const hasOpenExceptions = timecard ? hasUnresolvedExceptions(timecard) : false;
   const isActionFinal = timecard ? isFinalTimecardStatus(timecard.status) : false;
   const isReviewActionPending = isApproving || isRejecting;
@@ -332,29 +421,48 @@ export const EmployeeTimesheetReview = () => {
   useEffect(() => {
     if (!timecard) return;
     setEmployeeName(timecard.employee_name || '');
-    setRegHours(formatHours(timecard.reg_hours));
-    setOtHours(formatHours(timecard.ot_hours));
-    setDtHours(formatHours(timecard.dt_hours));
+    setClientName(extractedClientName || actualClientName || '');
+    setDepartmentName(extractedDepartmentName || actualDepartmentName || '');
+    setWeekEnding(toDateInputValue(timecard.week_ending || timesheet?.week_ending));
+    setRegHours(toHoursInputValue(timecard.reg_hours));
+    setOtHours(toHoursInputValue(timecard.ot_hours));
+    setDtHours(toHoursInputValue(timecard.dt_hours));
+
     setReviewComment(timecard.review_comment || '');
     setFormError('');
-  }, [timecard]);
+  }, [actualClientName, actualDepartmentName, extractedClientName, extractedDepartmentName, timecard, timesheet?.week_ending]);
 
-  const parseHours = (value: string) => {
-    const numericValue = Number(value.trim());
-    return Number.isFinite(numericValue) && numericValue >= 0 ? numericValue : null;
-  };
 
   const handleResolveSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!timecard) return;
 
-    const parsedReg = parseHours(regHours);
-    const parsedOt = parseHours(otHours);
-    const parsedDt = parseHours(dtHours);
-    if (parsedReg === null || parsedOt === null || parsedDt === null) {
-      setFormError('Regular, OT, and DT hours must be non-negative numbers.');
+    if (requiresEmployeeCorrection && !employeeName.trim()) {
+      setFormError('Employee name is required to resume matching.');
       return;
     }
+    if (requiresClientCorrection && !clientName.trim()) {
+      setFormError('Client name is required to resume matching.');
+      return;
+    }
+    if (requiresDepartmentCorrection && !departmentName.trim()) {
+      setFormError('Department name is required to resume matching.');
+      return;
+    }
+    if (requiresWeekEndingCorrection && !weekEnding) {
+      setFormError('Week ending is required to resume matching.');
+      return;
+    }
+
+    const parsedRegHours = parseHoursInput(regHours);
+    const parsedOtHours = parseHoursInput(otHours);
+    const parsedDtHours = parseHoursInput(dtHours);
+
+    if (requiresHoursCorrection && (parsedRegHours === null || parsedOtHours === null || parsedDtHours === null)) {
+      setFormError('Regular, OT, and DT hours must be valid non-negative numbers.');
+      return;
+    }
+
     if (!reviewComment.trim()) {
       setFormError('Add a reviewer comment before resolving this exception.');
       return;
@@ -364,17 +472,25 @@ export const EmployeeTimesheetReview = () => {
       {
         timecardId: timecard.timecard_id,
         payload: {
-          employee_name: employeeName.trim() || null,
-          reg_hours: parsedReg,
-          ot_hours: parsedOt,
-          dt_hours: parsedDt,
+          employee_name: showEmployeeNameCorrection ? employeeName.trim() || null : null,
+          client_name: requiresClientCorrection ? clientName.trim() || null : null,
+          department_name: requiresDepartmentCorrection ? departmentName.trim() || null : null,
+          week_ending: requiresWeekEndingCorrection ? weekEnding || null : null,
+          reg_hours: requiresHoursCorrection ? parsedRegHours : null,
+          ot_hours: requiresHoursCorrection ? parsedOtHours : null,
+          dt_hours: requiresHoursCorrection ? parsedDtHours : null,
           review_comment: reviewComment.trim(),
         },
       },
       {
         onSuccess: (updated) => {
           setLocalTimecard(updated);
-          toast.success('Exception resolved and timecard updated.', 'Resolved');
+          toast.success(
+            hasMatchingPrerequisiteException
+              ? 'Correction submitted and this employee was reprocessed.'
+              : 'Exception resolved and timecard updated.',
+            'Resolved',
+          );
           setIsEditorOpen(false);
         },
         onError: (requestError) => toast.error(requestError.message, 'Resolve failed'),
@@ -714,18 +830,95 @@ export const EmployeeTimesheetReview = () => {
         size="lg"
       >
         <form onSubmit={handleResolveSubmit} className="space-y-5">
-          <Input
-            label="Employee name"
-            value={employeeName}
-            onChange={(event) => setEmployeeName(event.target.value)}
-            disabled={isResolving}
-            fullWidth
-          />
-          <div className="grid gap-4 md:grid-cols-3">
-            <Input label="Regular hours" type="number" min="0" step="0.01" value={regHours} onChange={(event) => setRegHours(event.target.value)} disabled={isResolving} fullWidth />
-            <Input label="OT hours" type="number" min="0" step="0.01" value={otHours} onChange={(event) => setOtHours(event.target.value)} disabled={isResolving} fullWidth />
-            <Input label="DT hours" type="number" min="0" step="0.01" value={dtHours} onChange={(event) => setDtHours(event.target.value)} disabled={isResolving} fullWidth />
-          </div>
+          {showEmployeeNameCorrection && (
+            <Input
+              label="Employee name"
+              value={employeeName}
+              onChange={(event) => setEmployeeName(event.target.value)}
+              disabled={isResolving}
+              fullWidth
+            />
+          )}
+          {requiresHoursCorrection && (
+            <div className="grid gap-4 md:grid-cols-3">
+              <Input
+                label="Reg hours"
+                type="number"
+                min="0"
+                step="0.01"
+                inputMode="decimal"
+                value={regHours}
+                onChange={(event) => {
+                  setRegHours(event.target.value);
+                  if (formError) setFormError('');
+                }}
+                disabled={isResolving}
+                fullWidth
+              />
+              <Input
+                label="OT hours"
+                type="number"
+                min="0"
+                step="0.01"
+                inputMode="decimal"
+                value={otHours}
+                onChange={(event) => {
+                  setOtHours(event.target.value);
+                  if (formError) setFormError('');
+                }}
+                disabled={isResolving}
+                fullWidth
+              />
+              <Input
+                label="DT hours"
+                type="number"
+                min="0"
+                step="0.01"
+                inputMode="decimal"
+                value={dtHours}
+                onChange={(event) => {
+                  setDtHours(event.target.value);
+                  if (formError) setFormError('');
+                }}
+                disabled={isResolving}
+                fullWidth
+              />
+            </div>
+          )}
+
+          {hasMatchingPrerequisiteException && (
+            <div className="grid gap-4 md:grid-cols-2">
+              {requiresClientCorrection && (
+                <Input
+                  label="Client name"
+                  value={clientName}
+                  onChange={(event) => setClientName(event.target.value)}
+                  disabled={isResolving}
+                  fullWidth
+                />
+              )}
+              {requiresDepartmentCorrection && (
+                <Input
+                  label="Department name"
+                  value={departmentName}
+                  onChange={(event) => setDepartmentName(event.target.value)}
+                  disabled={isResolving}
+                  fullWidth
+                />
+              )}
+              {requiresWeekEndingCorrection && (
+                <Input
+                  label="Week ending"
+                  type="date"
+                  value={weekEnding}
+                  onChange={(event) => setWeekEnding(toSundayWeekEndingInputValue(event.target.value))}
+                  disabled={isResolving}
+                  fullWidth
+                />
+              )}
+            </div>
+          )}
+
           <Textarea
             label="Reviewer comment"
             value={reviewComment}
@@ -751,23 +944,3 @@ export const EmployeeTimesheetReview = () => {
     </div>
   );
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

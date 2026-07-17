@@ -56,6 +56,8 @@ export interface EmployeeRecord {
 
 export interface GlobalData {
   client_name?: string | null;
+  department?: string | null;
+  department_name?: string | null;
   week_ending?: string | null;
   [key: string]: unknown;
 }
@@ -108,7 +110,7 @@ export interface TimecardEntry {
   assignment_id?: string | null;
   rule_id?: string | null;
   reviewed_by?: string | null;
-  week_ending: string;
+  week_ending: string | null;
   employee_name?: string | null;
   reg_hours?: number | string | null;
   ot_hours?: number | string | null;
@@ -128,6 +130,9 @@ export interface TimecardEntry {
 
 export interface TimecardUpdatePayload {
   employee_name?: string | null;
+  client_name?: string | null;
+  department_name?: string | null;
+  week_ending?: string | null;
   reg_hours?: number | null;
   ot_hours?: number | null;
   dt_hours?: number | null;

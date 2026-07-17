@@ -2,11 +2,12 @@ import React from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { AppLayout } from '../../../components/layouts';
 import { useAuth, useLogout } from '../../auth/hooks';
-import { Database, Mail, ClipboardList } from 'lucide-react';
+import { ClipboardList, Database, Mail, UsersRound } from 'lucide-react';
 
 const reviewerItems = [
   { label: 'Timecards', href: 'timesheets', icon: Database },
   { label: 'Payroll', href: 'timecards', icon: ClipboardList },
+  { label: 'Assignments', href: 'assignments', icon: UsersRound },
   { label: 'Mail', href: 'emails', icon: Mail },
 ];
 
@@ -22,6 +23,8 @@ const Reviewer: React.FC = () => {
 
   const activePageTitle = location.pathname.includes('/emails')
     ? 'Mail'
+    : location.pathname.includes('/assignments')
+      ? 'Assignments'
     : location.pathname.includes('/timecards') && !location.pathname.includes('/exception')
       ? 'Payroll'
       : location.pathname.includes('/timesheets')
@@ -47,4 +50,3 @@ const Reviewer: React.FC = () => {
 };
 
 export default Reviewer;
-
