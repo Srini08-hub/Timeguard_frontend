@@ -12,14 +12,6 @@ export const timecardQueryKeys = {
   detail: (timecardId: string) => ['timecards', timecardId] as const,
 };
 
-export const useTimecardsByTimesheet = (timesheetId?: string) => {
-  return useQuery<TimecardEntry[], Error>({
-    queryKey: timesheetId ? timecardQueryKeys.byTimesheet(timesheetId) : ['timecards', 'timesheet'],
-    queryFn: () => timecardService.getByTimesheet(timesheetId || ''),
-    enabled: Boolean(timesheetId),
-  });
-};
-
 export const useApprovedTimecards = () => {
   return useQuery<TimecardEntry[], Error>({
     queryKey: timecardQueryKeys.approved,
@@ -39,6 +31,7 @@ export const useExportApprovedTimecards = () => {
     mutationFn: timecardService.exportApproved,
   });
 };
+
 export const useTimecard = (timecardId?: string) => {
   return useQuery<TimecardEntry, Error>({
     queryKey: timecardId ? timecardQueryKeys.detail(timecardId) : ['timecards', 'detail'],

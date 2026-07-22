@@ -23,6 +23,7 @@ import { ClientRuleFormPage } from '../features/ClientRules/components/ClientRul
 import { ClientRulesList } from '../features/ClientRules/components/ClientRulesList';
 import { MailInbox } from '../features/Emails/components/MailInbox';
 import { PollingControl } from '../features/Emails/components/PollingControl';
+import { ExcelExtractionStrategySettings } from '../features/Operations/components/ExcelExtractionStrategySettings';
 import { MailDetails } from '../features/Emails/components/MailDetails';
 
 const AppRoutes: React.FC = () => {
@@ -56,6 +57,7 @@ const AppRoutes: React.FC = () => {
           <Route path="employees/:empId/assign/:clientId/departments" element={<EmployeeAssignmentDepartments />} />
           <Route path="clients" element={<Clients />} />
           <Route path="polling" element={<PollingControl />} />
+          <Route path="extraction-strategy" element={<ExcelExtractionStrategySettings />} />
           <Route path="clients/:clientId" element={<ClientDetails />} />
           <Route path="clients/:clientId/departments/:departmentId" element={<DepartmentDetails />} />
           <Route path="clients/:clientId/departments/:departmentId/rules" element={<ClientRulesList />} />

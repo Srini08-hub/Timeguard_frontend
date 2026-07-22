@@ -30,14 +30,14 @@ export const POLLING_ENDPOINTS = {
   STOP: '/polling/stop',
 } as const
 
-export const CONTENT_EXTRACT_ENDPOINTS = {
-  GET_CONTENT_EXTRACTS_BY_EMAIL_ID: (emailId: string) => `/content-extracts/email/${emailId}`,
+export const OPERATIONS_ENDPOINTS = {
+  GET_EXCEL_EXTRACTION_STRATEGY: '/operations/excel-extraction-strategy',
+  UPDATE_EXCEL_EXTRACTION_STRATEGY: '/operations/excel-extraction-strategy',
 } as const
 
 export const TIMESHEET_ENDPOINTS = {
   GET_UNDER_REVIEW_TIMESHEETS: '/timesheet/under_review',
   GET_PROCESSED_TIMESHEETS: '/timesheet/processed',
-  MARK_PROCESSED: (timesheetId: string) => '/timesheet/' + timesheetId + '/processed',
 } as const
 
 export const EMPLOYEE_ENDPOINTS = {

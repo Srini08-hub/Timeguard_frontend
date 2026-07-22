@@ -82,12 +82,6 @@ export interface Timesheet {
   created_at?: string | null;
 }
 
-export interface ContentExtract {
-  extracted_payload: TimesheetExtractedPayload | null;
-  source_type: string;
-  attachment_name: string;
-}
-
 export type TimecardStatus = 'pending' | 'no_exception' | 'exception' | 'approved' | 'rejected';
 export type ExceptionSeverity = 'none' | 'low' | 'medium' | 'high';
 
