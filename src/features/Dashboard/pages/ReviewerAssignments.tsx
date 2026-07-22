@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQueries } from '@tanstack/react-query';
-import { Building2, BriefcaseBusiness, Filter, Search, UserCheck, UsersRound } from 'lucide-react';
+import { Building2, BriefcaseBusiness, Search, UserCheck, UsersRound } from 'lucide-react';
 
 import { Badge } from '../../../components/ui/Badge';
-import { Input } from '../../../components/ui/Input';
 import { Table, type TableColumn } from '../../../components/ui/Table';
 import { useClients } from '../../Client/hooks/useClients';
 import type { ClientResponse } from '../../Client/types';
@@ -191,28 +190,26 @@ export const ReviewerAssignments = () => {
 
   return (
     <section className="space-y-6 p-6">
-      <div className="grid gap-5 lg:grid-cols-[minmax(260px,1fr)_minmax(420px,0.95fr)] lg:items-start">
-        <div className="lg:pt-7">
+      <div className="grid gap-5 lg:grid-cols-[minmax(260px,1fr)_minmax(320px,420px)] lg:items-center">
+        <div>
           <h1 className="text-2xl font-semibold text-[var(--text-primary)]">Employee Assignments</h1>
           <p className="mt-1 text-sm text-[var(--text-muted)]">
             Active employees with their assigned client and department.
           </p>
         </div>
-        <div className="flex w-full flex-col gap-3">
-          <Input
-            label="Search assignments"
-            placeholder="Search employee, client, department, or use client+department"
-            value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
-            icon={<Search className="h-4 w-4" />}
-            helperText="Use + to combine filters, for example: apex+production."
-            fullWidth
-          />
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-[var(--text-muted)]">
-              <Filter className="h-3.5 w-3.5" />
-              Filter
-            </span>
+        <div className="flex w-full flex-col gap-3 lg:items-end">
+          <div className="relative w-full max-w-[320px]">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
+            <input
+              type="search"
+              aria-label="Search employee, client, department"
+              placeholder="Search employee, client, department..."
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              className="h-8 w-full rounded-md border border-[var(--border-color)] bg-white py-1.5 pl-9 pr-3 text-xs text-[var(--text-primary)] shadow-sm shadow-gray-950/5 transition placeholder:text-[var(--text-muted)] focus-visible:border-[var(--primary)] focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-[var(--primary)]"
+            />
+          </div>
+          <div className="flex w-full max-w-[320px] flex-wrap items-center gap-2">
             {statusFilterOptions.map((option) => {
               const isSelected = statusFilter === option.value;
               return (
@@ -220,10 +217,10 @@ export const ReviewerAssignments = () => {
                   key={option.value}
                   type="button"
                   onClick={() => setStatusFilter(option.value)}
-                  className={`rounded-full border px-3 py-1.5 text-sm font-medium transition ${
+                  className={`rounded-full border px-4 py-1.5 text-xs font-medium transition ${
                     isSelected
                       ? 'border-[var(--primary)] bg-[var(--primary)] text-white'
-                      : 'border-[var(--border-color)] bg-white text-[var(--text-secondary)] hover:bg-[var(--bg-card-soft)] hover:text-[var(--text-primary)]'
+                      : 'border-[var(--primary)] bg-[var(--primary-soft)] text-[var(--text-muted)] hover:bg-white hover:text-[var(--text-primary)]'
                   }`}
                 >
                   {option.label}
